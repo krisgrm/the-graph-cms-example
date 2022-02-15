@@ -1,0 +1,23 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: CMS
+    network: goerli
+    source:
+      address: "0xab62F94EC37E7F8c7a7DA560C6a1B6225362Cd12"
+      abi: CMS
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - StateChange
+      abis:
+        - name: CMS
+          file: ./abis/CMS.json
+      eventHandlers:
+        - event: StateChange(address,bytes)
+          handler: handleStateChange
+      file: ./src/mapping.ts
