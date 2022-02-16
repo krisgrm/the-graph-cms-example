@@ -17,11 +17,15 @@ export function handleStateChange(event: StateChange): void {
   }
 
   // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
+  entity.count = entity.count.plus(BigInt.fromI32(1))
 
   // Entity fields can be set based on event parameters
   entity.author = event.params.author
-  entity.data = event.params.data
+  //entity.data = event.params.data
+
+  // decode event.params.data from bytes to string
+  let data = event.params.data.toString()
+  entity.data = data;
 
   // Entities can be written to the store with `.save()`
   entity.save()

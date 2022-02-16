@@ -1,6 +1,6 @@
 specVersion: 0.0.2
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: CMS
@@ -16,8 +16,8 @@ dataSources:
         - StateChange
       abis:
         - name: CMS
-          file: ./abis/CMS.json
+          file: CMS/abis/CMS.json
       eventHandlers:
         - event: StateChange(address,bytes)
           handler: handleStateChange
-      file: ./src/mapping.ts
+      file: CMS/CMS.wasm
