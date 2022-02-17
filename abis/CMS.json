@@ -19,7 +19,13 @@
     "type": "event"
   },
   {
-    "inputs": [{ "internalType": "bytes", "name": "data_", "type": "bytes" }],
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
+      }
+    ],
     "name": "stateChange",
     "outputs": [],
     "stateMutability": "nonpayable",

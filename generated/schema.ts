@@ -11,34 +11,34 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-import {CMS} from "./CMS/CMS";
-
-export class ExampleEntity extends Entity {
+export class Project extends Entity {
   constructor(id: string) {
     super();
-
     this.set("id", Value.fromString(id));
 
-    this.set("count", Value.fromBigInt(BigInt.zero()));
-    this.set("author", Value.fromBytes(Bytes.empty()));
-    this.set("data", Value.fromString(""));
+    this.set("name", Value.fromString(""));
+    this.set("owner", Value.fromBytes(Bytes.empty()));
+    this.set("members", Value.fromBytesArray(new Array(0)));
+    this.set("members2", Value.fromStringArray(new Array(0)));
+    this.set("createdAt", Value.fromBigInt(BigInt.zero()));
+    this.set("updatedAt", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save ExampleEntity entity without an ID");
+    assert(id != null, "Cannot save Project entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save ExampleEntity entity with non-string ID. " +
+        "Cannot save Project entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("ExampleEntity", id.toString(), this);
+      store.set("Project", id.toString(), this);
     }
   }
 
-  static load(id: string): ExampleEntity | null {
-    return changetype<ExampleEntity | null>(store.get("ExampleEntity", id));
+  static load(id: string): Project | null {
+    return changetype<Project | null>(store.get("Project", id));
   }
 
   get id(): string {
@@ -50,30 +50,189 @@ export class ExampleEntity extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get count(): BigInt {
-    let value = this.get("count");
-    return value!.toBigInt();
-  }
-
-  set count(value: BigInt) {
-    this.set("count", Value.fromBigInt(value));
-  }
-
-  get author(): Bytes {
-    let value = this.get("author");
-    return value!.toBytes();
-  }
-
-  set author(value: Bytes) {
-    this.set("author", Value.fromBytes(value));
-  }
-
-  get data(): string {
-    let value = this.get("data");
+  get name(): string {
+    let value = this.get("name");
     return value!.toString();
   }
 
-  set data(value: string) {
-    this.set("data", Value.fromString(value));
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get owner(): Bytes {
+    let value = this.get("owner");
+    return value!.toBytes();
+  }
+
+  set owner(value: Bytes) {
+    this.set("owner", Value.fromBytes(value));
+  }
+
+  get members(): Array<Bytes> {
+    let value = this.get("members");
+    return value!.toBytesArray();
+  }
+
+  set members(value: Array<Bytes>) {
+    this.set("members", Value.fromBytesArray(value));
+  }
+
+  get members2(): Array<string> {
+    let value = this.get("members2");
+    return value!.toStringArray();
+  }
+
+  set members2(value: Array<string>) {
+    this.set("members2", Value.fromStringArray(value));
+  }
+
+  get members1(): Array<string> | null {
+    let value = this.get("members1");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set members1(value: Array<string> | null) {
+    if (!value) {
+      this.unset("members1");
+    } else {
+      this.set("members1", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+
+  get createdAt(): BigInt {
+    let value = this.get("createdAt");
+    return value!.toBigInt();
+  }
+
+  set createdAt(value: BigInt) {
+    this.set("createdAt", Value.fromBigInt(value));
+  }
+
+  get updatedAt(): BigInt {
+    let value = this.get("updatedAt");
+    return value!.toBigInt();
+  }
+
+  set updatedAt(value: BigInt) {
+    this.set("updatedAt", Value.fromBigInt(value));
+  }
+}
+
+export class User extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("name", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save User entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save User entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("User", id.toString(), this);
+    }
+  }
+
+  static load(id: string): User | null {
+    return changetype<User | null>(store.get("User", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get name(): string {
+    let value = this.get("name");
+    return value!.toString();
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get projects(): Array<string> | null {
+    let value = this.get("projects");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set projects(value: Array<string> | null) {
+    if (!value) {
+      this.unset("projects");
+    } else {
+      this.set("projects", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+}
+
+export class UserProject extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("user", Value.fromString(""));
+    this.set("project", Value.fromString(""));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save UserProject entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save UserProject entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("UserProject", id.toString(), this);
+    }
+  }
+
+  static load(id: string): UserProject | null {
+    return changetype<UserProject | null>(store.get("UserProject", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get user(): string {
+    let value = this.get("user");
+    return value!.toString();
+  }
+
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 }

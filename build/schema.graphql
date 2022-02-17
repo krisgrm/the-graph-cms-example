@@ -1,6 +1,22 @@
-type ExampleEntity @entity {
+type Project @entity {
   id: ID!
-  count: BigInt!
-  author: Bytes! # address
-  data: String! # String data
+  name: String!
+  owner: Bytes! # address
+  members: [Bytes!]! # addresses
+  members2: [String!]! # addresses
+  members1: [UserProject!] @derivedFrom(field: "project")
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type User @entity {
+  id: ID!
+  name: String!
+  projects: [UserProject!] @derivedFrom(field: "user")
+}
+
+type UserProject @entity {
+  id: ID! # Set to `${user.id}-${organization.id}`
+  user: User!
+  project: Project!
 }
