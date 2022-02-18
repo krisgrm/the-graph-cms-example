@@ -1,6 +1,7 @@
 import {Address, Bytes, log} from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
 import {Project, User, UserProject} from "../generated/schema";
+import { store } from '@graphprotocol/graph-ts'
 
 export function handleStateChange(event: StateChange): void {
   // Entities can be loaded from the store using a string ID; this ID
@@ -78,6 +79,7 @@ function createProject(event: StateChange, id: string, name: string): void {
 function addMembersToProject(event: StateChange, projectId: string, members: string[]): void {
   let project = Project.load(projectId)
   if (project == null) return
+  if (project.owner != event.params.author) return
   log.info("Number of project members: {}", [members.length.toString()])
   let projectMembers = project.members
   for (let i = 0; i < members.length; i++) {
@@ -93,6 +95,23 @@ function addMembersToProject(event: StateChange, projectId: string, members: str
       userProject.user = members[i]
       userProject.project = projectId
       userProject.save()
+      project.updatedAt = event.block.timestamp
+      project.save()
+    }
+  }
+}
+
+function removeMembersFromProject(event: StateChange, projectId: string, members: string[]): void {
+  let project = Project.load(projectId)
+  if (project == null) return
+  if (project.owner != event.params.author) return
+  log.info("Number of project members: {}", [members.length.toString()])
+  let projectMembers = project.members
+  for (let i = 0; i < members.length; i++) {
+    log.info("project member: {}", [members[i]])
+    let userProject = UserProject.load(members[i] + "-" + projectId)
+    if (userProject != null) {
+      store.remove('UserProject', members[i] + "-" + projectId)
       project.updatedAt = event.block.timestamp
       project.save()
     }
