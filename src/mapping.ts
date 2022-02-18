@@ -1,6 +1,6 @@
 import {Address, Bytes, log} from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
-import {Project} from "../generated/schema";
+import {Project, User, UserProject} from "../generated/schema";
 
 export function handleStateChange(event: StateChange): void {
   // Entities can be loaded from the store using a string ID; this ID
@@ -14,15 +14,12 @@ export function handleStateChange(event: StateChange): void {
   log.info("header: {}", [header])
   log.info("body: {}", [body])
 
-  // header byte 1 is the verb byte 2 is the noun
+  // header byte 1 is the action byte 2 is the type
   // noun: create, delete, update
   let action = header.slice(0, 2)
   // noun: project
   let type = header.slice(2, 4)
-  if (body.length > 1000) {
-    log.info("body too long", [])
-    return
-  }
+
   log.info("action: {}, type: {}", [action.toString(), type.toString()])
   log.info("body: {}", [body.toString()])
   // create project
@@ -41,7 +38,9 @@ export function handleStateChange(event: StateChange): void {
     // project members are string addresses of the rest of the body
     // split members into array
     let members = Bytes.fromHexString("0x" + body.slice(4)).toString()
+    log.info("parsed members from body: {}", [members])
     let memberArray = members.split("_")
+    log.info("member array: {}", [memberArray[0]])
     log.info("add members to project, ID: {}, members: {}", [id, memberArray.toString()])
     addMembersToProject(event, id, memberArray)
   }
@@ -76,18 +75,26 @@ function createProject(event: StateChange, id: string, name: string): void {
   project.save()
 }
 
-function addMembersToProject(event: StateChange, id: string, members: string[]): void {
-  let project = Project.load(id)
+function addMembersToProject(event: StateChange, projectId: string, members: string[]): void {
+  let project = Project.load(projectId)
   if (project == null) return
-  log.info("project members: {}", [members.length.toString()])
+  log.info("Number of project members: {}", [members.length.toString()])
   let projectMembers = project.members
   for (let i = 0; i < members.length; i++) {
     log.info("project member: {}", [members[i]])
-    projectMembers.push(Address.fromString(members[i]))
-    project.updatedAt = event.block.timestamp
+    let user = User.load(members[i])
+    if (user == null) {
+      user = new User(members[i])
+      user.save()
+    }
+    let userProject = UserProject.load(members[i] + "-" + projectId)
+    if (userProject == null) {
+      userProject = new UserProject(members[i] + "-" + projectId)
+      userProject.user = members[i]
+      userProject.project = projectId
+      userProject.save()
+      project.updatedAt = event.block.timestamp
+      project.save()
+    }
   }
-  project.members2 = ["BLABBLA", "BLABBLA"]
-  project.members = projectMembers
-  project.updatedAt = event.block.timestamp
-  project.save()
 }

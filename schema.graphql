@@ -2,21 +2,19 @@ type Project @entity {
   id: ID!
   name: String!
   owner: Bytes! # address
-  members: [Bytes!]! # addresses
-  members2: [String!]! # addresses
-  members1: [UserProject!] @derivedFrom(field: "project")
+  members: [UserProject!] @derivedFrom(field: "project")
   createdAt: BigInt!
   updatedAt: BigInt!
 }
 
 type User @entity {
-  id: ID!
+  id: ID! # address
   name: String!
-  projects: [UserProject!] @derivedFrom(field: "user")
+  project: [UserProject!] @derivedFrom(field: "user")
 }
 
 type UserProject @entity {
-  id: ID! # Set to `${user.id}-${organization.id}`
+  id: ID! # Set to `${user.id}-${project.id}`
   user: User!
   project: Project!
 }
