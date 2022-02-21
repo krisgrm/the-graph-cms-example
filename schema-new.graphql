@@ -3,8 +3,6 @@ type Space @entity {
   id: ID!
   "owner of the space - user who initiated the space"
   owner: User!
-  "ipfs metadata hash"
-  metadata: String!
   "platforms linked to this space"
   platforms: [PlatformSpace!] @derivedFrom(field: "space")
 }
@@ -20,6 +18,8 @@ type Platform @entity {
   admins: [UserPlatform!]! @derivedFrom(field: "platform")
   "projects linked to this platform"
   projects: [ProjectPlatform!]! @derivedFrom(field: "platform")
+  "content linked to this platform"
+  content: [ContentPlatform!] @derivedFrom(field: "platform")
 }
 
 type Project @entity {
@@ -27,20 +27,9 @@ type Project @entity {
   id: ID!
   "owner of the project - user who created the project"
   owner: User!
-  "ipfs metadata hash"
-  metadata: String!
   "content linked to this project"
   content: [ContentProject!] @derivedFrom(field: "project")
   admins: [UserProject!] @derivedFrom(field: "project")
-}
-
-type ContentProject @entity {
-  "unique identifier and primary key of the entity"
-  id: ID!
-  "project linked to this content"
-  project: Project!
-  "content linked to this project"
-  content: Content!
 }
 
 type Content @entity {
@@ -56,6 +45,31 @@ type Content @entity {
   admins: [UserContent!] @derivedFrom(field: "content")
 }
 
+type User @entity {
+  "unique identifier and primary key of the entity"
+  id: ID! # address
+  content: [UserContent!] @derivedFrom(field: "user")
+  platform: [UserPlatform!] @derivedFrom(field: "user")
+}
+
+type ContentProject @entity {
+  "unique identifier and primary key of the entity"
+  id: ID!
+  "project linked to this content"
+  project: Project!
+  "content linked to this project"
+  content: Content!
+}
+
+type ContentPlatform @entity {
+  "unique identifier and primary key of the entity"
+  id: ID!
+  "project linked to this content"
+  platform: Platform!
+  "content linked to this project"
+  content: Content!
+}
+
 type UserContent @entity {
   "unique identifier and primary key of the entity"
   id: ID!
@@ -63,16 +77,6 @@ type UserContent @entity {
   content: Content!
   "user linked to this content"
   user: User!
-}
-
-type User @entity {
-  "unique identifier and primary key of the entity"
-  id: ID! # address
-  "ipfs metadata hash"
-  metadata: String!
-  project: [UserProject!] @derivedFrom(field: "user")
-  content: [UserContent!] @derivedFrom(field: "user")
-  platform: [UserPlatform!] @derivedFrom(field: "user")
 }
 
 type UserProject @entity {
@@ -98,3 +102,5 @@ type ProjectPlatform @entity {
   project: Project!
   platform: Platform!
 }
+
+
