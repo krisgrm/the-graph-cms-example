@@ -4,7 +4,7 @@ import {
   Content,
   Platform,
   Project,
-  Space, User,
+  Space, User, UserContent,
   UserPlatform,
   UserProject
 } from "../generated/schema";
@@ -53,108 +53,126 @@ export function handleStateChange(event: StateChange): void {
   // event.params.data has starting 0x and then header and body.
   // first 4 characters are header, rest is body
   const header = event.params.data.toHex().slice(2, 6)
-  const body = event.params.data.toHex().slice(6)
-  log.info("header: {}", [header])
-  log.info("body: {}", [body])
-
   // header byte 1 is the noun (space, project, platform, content) byte 2 is the verb (create, assign, unassign, approve, revoke)
   const noun = header.slice(0, 2)
   const verb = header.slice(2, 4)
+  const eventAuthor = event.params.author.toHexString();
 
-  log.info("noun: {}, verb: {}", [noun.toString(), verb.toString()])
-  log.info("body: {}", [body.toString()])
+  log.info("noun: {}, verb: {} author: {}", [noun.toString(), verb.toString(), eventAuthor])
 
   // init space
   if (noun.toString() == "01" && verb.toString() == "01") {
     const spaceId = buildEntityIdFromEvent(event)
-    initSpace(event.params.author.toString(), spaceId)
+    log.info("space id to create {}", [spaceId])
+    initSpace(eventAuthor, spaceId)
   }
   // platform create
   if (noun.toString() == "02" && verb.toString() == "01") {
+    const spaceId = event.params.data.toString().slice(2)
     const platformId = buildEntityIdFromEvent(event)
-    const spaceId = body.toString()
-    createPlatform(event.params.author.toString(), platformId, spaceId)
+    createPlatform(eventAuthor, platformId, spaceId)
   }
   // platform assign content
   if (noun.toString() == "02" && verb.toString() == "02") {
-    const bodyParts = body.toString().split("_");
+    const body = event.params.data.toString().slice(2)
+    const bodyParts = body.split("_");
     const contentId = bodyParts[0]
     const platformId = bodyParts[1]
-    assignContentToPlatform(event.params.author.toString(),  platformId, contentId)
+    assignContentToPlatform(eventAuthor, platformId, contentId)
   }
   // platform approve admin
   if (noun.toString() == "02" && verb.toString() == "03") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const platformId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
-    platformApproveAdmin(event.params.author.toString(), platformId, admins)
+    platformApproveAdmin(eventAuthor, platformId, admins)
   }
   // platform revoke admin
   if (noun.toString() == "02" && verb.toString() == "04") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const platformId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
-    platformRevokeAdmin(event.params.author.toString(), platformId, admins)
+    platformRevokeAdmin(eventAuthor, platformId, admins)
   }
   // platform assign project
   if (noun.toString() == "02" && verb.toString() == "05") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const bodyParts = body.toString().split("_");
     const projectId = bodyParts[0]
     const platformId = bodyParts[1]
-    assignProjectToPlatform(event.params.author.toString(), platformId, projectId)
+    assignProjectToPlatform(eventAuthor, platformId, projectId)
   }
   // platform unassign project
   if (noun.toString() == "02" && verb.toString() == "06") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const projectId = body.toString()
-    unassignProjectFromPlatform(event.params.author.toString(), projectId)
+    unassignProjectFromPlatform(eventAuthor, projectId)
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {
     const projectId = buildEntityIdFromEvent(event)
-    createProject(event.params.author.toString(), projectId)
+    createProject(eventAuthor, projectId)
   }
   // project assign content
   if (noun.toString() == "03" && verb.toString() == "02") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const bodyParts = body.toString().split("_");
     const contentId = bodyParts[0]
     const projectId = bodyParts[1]
-    assignContentToProject(event.params.author.toString(), contentId, projectId)
+    assignContentToProject(eventAuthor, contentId, projectId)
   }
   // project approve admin
   if (noun.toString() == "03" && verb.toString() == "03") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const projectId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
-    projectApproveAdmin(event.params.author.toString(), projectId, admins)
+    projectApproveAdmin(eventAuthor, projectId, admins)
   }
   // project revoke admin
   if (noun.toString() == "03" && verb.toString() == "04") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const projectId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
-    projectRevokeAdmin(event.params.author.toString(), projectId, admins)
+    projectRevokeAdmin(eventAuthor, projectId, admins)
   }
 
   // content create
   if (noun.toString() == "04" && verb.toString() == "01") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const contentId = buildEntityIdFromEvent(event)
     const bytes = Bytes.fromHexString("0x1220" + body);
     const metadata = encode(bytes)
-    createContent(event.params.author.toString(), contentId, metadata)
+    createContent(eventAuthor, contentId, metadata)
   }
   // content delete
   if (noun.toString() == "04" && verb.toString() == "02") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const contentId = body.toString()
-    deleteContent(event.params.author.toString(), contentId)
+    deleteContent(eventAuthor, contentId)
   }
   // content unassign
   if (noun.toString() == "04" && verb.toString() == "03") {
+    const body = event.params.data.toHex().slice(6)
+    log.info("body: {}", [body.toString()])
     const contentId = body.toString()
-    unassignContent(event.params.author.toString(), contentId)
+    unassignContent(eventAuthor, contentId)
   }
 }
 
-function buildEntityIdFromEvent(event: StateChange) : string {
-  return event.transaction.hash.toHex() + "-" + event.logIndex.toString();
+export function buildEntityIdFromEvent(event: StateChange) : string {
+  return event.transaction.hash.toHex().slice(2) + "-" + event.logIndex.toString();
 }
 
-function buildMappingTableId(leftId: string, rightId: string) : string {
+export function buildMappingTableId(leftId: string, rightId: string) : string {
   return leftId + "-" + rightId;
 }
 
