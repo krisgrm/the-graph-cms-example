@@ -258,8 +258,7 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
   if (content == null) return
 
   /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender) return
-  if (platform.admins.indexOf(sender) == -1) return
+  if (platform.owner != sender && platform.admins && platform.admins.indexOf(sender) == -1) return
 
   content.platform = platformId
   content.save()
