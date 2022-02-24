@@ -150,15 +150,15 @@ export function handleStateChange(event: StateChange): void {
   }
 }
 
-function buildEntityIdFromEvent(event: StateChange) {
+function buildEntityIdFromEvent(event: StateChange) : string {
   return event.transaction.hash.toHex() + "-" + event.logIndex.toString();
 }
 
-function buildMappingTableId(leftId: string, rightId: string) {
+function buildMappingTableId(leftId: string, rightId: string) : string {
   return leftId + "-" + rightId;
 }
 
-function initSpace(owner: string, id: string) {
+function initSpace(owner: string, id: string) : void {
   let space = Space.load(id)
   if (space != null) return
    space = new Space(id)
@@ -174,7 +174,7 @@ function initSpace(owner: string, id: string) {
   space.save()
 }
 
-function createPlatform(sender: string, id: string, spaceId: string) {
+function createPlatform(sender: string, id: string, spaceId: string) : void {
   let platform = Platform.load(id)
   if (platform != null) return
   let space = Space.load(spaceId)
@@ -196,7 +196,7 @@ function createProject(owner : string, id: string): void {
   project.save()
 }
 
-function assignProjectToPlatform(sender: string, platformId : string, projectId: string) {
+function assignProjectToPlatform(sender: string, platformId : string, projectId: string) : void {
 
   let platform = Platform.load(platformId)
   if (platform == null) return
@@ -211,7 +211,7 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   project.save()
 }
 
-function createContent(sender: string, contentId: string, metadata: string): void {
+function createContent(sender: string, contentId: string, metadata: string) : void {
   let content = Content.load(contentId)
   if (content != null) return
   content = new Content(contentId)
@@ -220,7 +220,7 @@ function createContent(sender: string, contentId: string, metadata: string): voi
   content.save()
 }
 
-function deleteContent(sender: string, contentId: string) {
+function deleteContent(sender: string, contentId: string) : void{
   let content = Content.load(contentId)
   if (content == null) return
   /* check if sender is owner */
@@ -235,7 +235,7 @@ function deleteContent(sender: string, contentId: string) {
 if platformId is null, then content is assigned to project
 if platformId is not null, then content is assigned to platform
  */
-function assignContentToProject(sender: string, projectId: string, contentId: string) {
+function assignContentToProject(sender: string, projectId: string, contentId: string) : void {
 
   let project = Project.load(projectId)
   if (project == null) return
@@ -250,7 +250,7 @@ function assignContentToProject(sender: string, projectId: string, contentId: st
   content.save()
 }
 
-function assignContentToPlatform(sender: string, platformId: string, contentId: string) {
+function assignContentToPlatform(sender: string, platformId: string, contentId: string) : void{
 
   let platform = Platform.load(platformId)
   if (platform == null) return
@@ -266,7 +266,7 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
 
 }
 
-function unassignContent(sender: string, contentId: string) {
+function unassignContent(sender: string, contentId: string) : void {
   let content = Content.load(contentId)
   if (content == null) return
 
@@ -275,7 +275,7 @@ function unassignContent(sender: string, contentId: string) {
   content.save()
 }
 
-function platformApproveAdmin(sender: string, platformId: string, admins: string[]) {
+function platformApproveAdmin(sender: string, platformId: string, admins: string[]) : void {
   let platform = Platform.load(platformId)
   if (platform == null) return
   if (platform.owner != sender) return
@@ -293,7 +293,7 @@ function platformApproveAdmin(sender: string, platformId: string, admins: string
   }
 }
 
-function platformRevokeAdmin(sender: string, platformId: string, admins: string[]) {
+function platformRevokeAdmin(sender: string, platformId: string, admins: string[]) : void {
   let platform = Platform.load(platformId)
   if (platform == null) return
   if (platform.owner != sender) return
@@ -305,7 +305,7 @@ function platformRevokeAdmin(sender: string, platformId: string, admins: string[
   }
 }
 
-function projectApproveAdmin(sender: string, projectId: string, admins: string[]) {
+function projectApproveAdmin(sender: string, projectId: string, admins: string[]) : void {
   let project = Project.load(projectId)
   if (project == null) return
   if (project.owner != sender) return
@@ -323,7 +323,7 @@ function projectApproveAdmin(sender: string, projectId: string, admins: string[]
   }
 }
 
-function projectRevokeAdmin(sender: string, projectId: string, admins: string[]) {
+function projectRevokeAdmin(sender: string, projectId: string, admins: string[]) : void{
   let project = Project.load(projectId)
   if (project == null) return
   if (project.owner != sender) return
@@ -335,7 +335,7 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
   }
 }
 
-function unassignProjectFromPlatform(sender: string, projectId: string) {
+function unassignProjectFromPlatform(sender: string, projectId: string) : void {
   let project = Project.load(projectId)
   if (project == null) return
 
