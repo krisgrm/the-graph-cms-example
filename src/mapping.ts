@@ -1,15 +1,15 @@
-import {log } from "@graphprotocol/graph-ts"
+import {Bytes, log} from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
 import {
-  Content, ContentPlatform, ContentProject,
+  Content,
   Platform,
   Project,
-  ProjectPlatform,
   Space, User,
   UserPlatform,
   UserProject
 } from "../generated/schema";
 import { store } from '@graphprotocol/graph-ts'
+import { encode } from "as-base58";
 
 /*
 shapes:
@@ -28,22 +28,21 @@ shapes:
 - project.revoke-admin: space-id, project-id, admin-address
 
 01 01 space.init
+
 02 01 platform.create
 02 02 platform.assign-content
-02 03 platform.unassign-content
-02 04 platform.approve-admin
-02 05 platform.revoke-admin
-02 06 platform.assign-project
-02 07 platform.unassign-project
+02 03 platform.approve-admin
+02 04 platform.revoke-admin
+02 05 platform.assign-project
 
 03 01 project.create
 03 02 project.assign-content
-03 03 project.unassign-content
-03 04 project.approve-admin
-03 05 project.revoke-admin
+03 03 project.approve-admin
+03 04 project.revoke-admin
 
 04 01 content.create
 04 02 content.delete
+04 03 content.unassign
 
  */
 export function handleStateChange(event: StateChange): void {
@@ -73,54 +72,39 @@ export function handleStateChange(event: StateChange): void {
   // platform create
   if (noun.toString() == "02" && verb.toString() == "01") {
     const platformId = buildEntityIdFromEvent(event)
-    const spaceId = body.toString() // TODO correct parsing
+    const spaceId = body.toString()
     createPlatform(event.params.author.toString(), platformId, spaceId)
   }
   // platform assign content
   if (noun.toString() == "02" && verb.toString() == "02") {
-    // TODO improve parsing logic after consulting with team
     const bodyParts = body.toString().split("_");
     const contentId = bodyParts[0]
     const platformId = bodyParts[1]
     assignContentToPlatform(event.params.author.toString(),  platformId, contentId)
   }
-  // platform unassign content
-  if (noun.toString() == "02" && verb.toString() == "03") {
-    // TODO improve parsing logic after consulting with team
-    const bodyParts = body.toString().split("_");
-    const contentId = bodyParts[0]
-    const platformId = bodyParts[1]
-    unassignContentFromPlatform(event.params.author.toString(), platformId, contentId)
-  }
   // platform approve admin
-  if (noun.toString() == "02" && verb.toString() == "04") {
-    // TODO improve parsing logic after consulting with team
+  if (noun.toString() == "02" && verb.toString() == "03") {
     const platformId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
     platformApproveAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform revoke admin
-  if (noun.toString() == "02" && verb.toString() == "05") {
-    // TODO improve parsing logic after consulting with team
+  if (noun.toString() == "02" && verb.toString() == "04") {
     const platformId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
     platformRevokeAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform assign project
-  if (noun.toString() == "02" && verb.toString() == "06") {
-    // TODO improve parsing logic after consulting with team
+  if (noun.toString() == "02" && verb.toString() == "05") {
     const bodyParts = body.toString().split("_");
     const projectId = bodyParts[0]
     const platformId = bodyParts[1]
     assignProjectToPlatform(event.params.author.toString(), platformId, projectId)
   }
   // platform unassign project
-  if (noun.toString() == "02" && verb.toString() == "07") {
-    // TODO improve parsing logic after consulting with team
-    const bodyParts = body.toString().split("_");
-    const projectId = bodyParts[0]
-    const platformId = bodyParts[1]
-    unassignProjectFromPlatform(event.params.author.toString(), platformId, projectId)
+  if (noun.toString() == "02" && verb.toString() == "06") {
+    const projectId = body.toString()
+    unassignProjectFromPlatform(event.params.author.toString(), projectId)
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {
@@ -129,32 +113,19 @@ export function handleStateChange(event: StateChange): void {
   }
   // project assign content
   if (noun.toString() == "03" && verb.toString() == "02") {
-    // TODO improve parsing logic after consulting with team
     const bodyParts = body.toString().split("_");
     const contentId = bodyParts[0]
     const projectId = bodyParts[1]
     assignContentToProject(event.params.author.toString(), contentId, projectId)
   }
-  // project unassign content
-  if (noun.toString() == "03" && verb.toString() == "03") {
-    // TODO improve parsing logic after consulting with team
-    const bodyParts = body.toString().split("_");
-    const contentId = bodyParts[0]
-    const projectId = bodyParts[1]
-    unassignContentFromProject(event.params.author.toString(), contentId, projectId)
-  }
   // project approve admin
-  if (noun.toString() == "03" && verb.toString() == "04") {
-    // TODO parse body to retrieve ID and admins
-    // TODO improve parsing logic after consulting with team
+  if (noun.toString() == "03" && verb.toString() == "03") {
     const projectId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
     projectApproveAdmin(event.params.author.toString(), projectId, admins)
   }
   // project revoke admin
-  if (noun.toString() == "03" && verb.toString() == "05") {
-    // TODO parse body to retrieve ID and admins
-    // TODO improve parsing logic after consulting with team
+  if (noun.toString() == "03" && verb.toString() == "04") {
     const projectId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
     projectRevokeAdmin(event.params.author.toString(), projectId, admins)
@@ -163,13 +134,19 @@ export function handleStateChange(event: StateChange): void {
   // content create
   if (noun.toString() == "04" && verb.toString() == "01") {
     const contentId = buildEntityIdFromEvent(event)
-    const metadata = body.toString()
+    const bytes = Bytes.fromHexString("0x1220" + body);
+    const metadata = encode(bytes)
     createContent(event.params.author.toString(), contentId, metadata)
   }
   // content delete
   if (noun.toString() == "04" && verb.toString() == "02") {
     const contentId = body.toString()
     deleteContent(event.params.author.toString(), contentId)
+  }
+  // content unassign
+  if (noun.toString() == "04" && verb.toString() == "03") {
+    const contentId = body.toString()
+    unassignContent(event.params.author.toString(), contentId)
   }
 }
 
@@ -221,8 +198,6 @@ function createProject(owner : string, id: string): void {
 
 function assignProjectToPlatform(sender: string, platformId : string, projectId: string) {
 
-  let platformProject = ProjectPlatform.load(buildMappingTableId(platformId, projectId))
-  if (platformProject != null) return
   let platform = Platform.load(platformId)
   if (platform == null) return
   let project = Project.load(projectId)
@@ -232,28 +207,8 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
 
-  platformProject = new ProjectPlatform(buildMappingTableId(platformId, projectId))
-  platformProject.project = projectId
-  platformProject.platform = platformId
-  platformProject.save()
-
-}
-
-/*
-TODO if we improve schema, we could access platform from project entity..
- */
-function unassignProjectFromPlatform(sender: string, platformId: string, projectId: string) {
-  let project = Project.load(projectId)
-  if (project == null) return
-  let platformProject = ProjectPlatform.load(buildMappingTableId(platformId, projectId))
-  if (platformProject == null) return
-  let platform = Platform.load(platformProject.platform)
-  if (platform == null) return
-
-  /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender) return
-  if (platform.admins.indexOf(sender) == -1) return
-  store.remove('ProjectPlatform', buildMappingTableId(platformId, projectId))
+  project.platform = platformId
+  project.save()
 }
 
 function createContent(sender: string, contentId: string, metadata: string): void {
@@ -281,8 +236,7 @@ if platformId is null, then content is assigned to project
 if platformId is not null, then content is assigned to platform
  */
 function assignContentToProject(sender: string, projectId: string, contentId: string) {
-  let projectContent = ContentProject.load(buildMappingTableId(projectId, contentId))
-  if (projectContent != null) return
+
   let project = Project.load(projectId)
   if (project == null) return
   let content = Content.load(contentId)
@@ -292,15 +246,12 @@ function assignContentToProject(sender: string, projectId: string, contentId: st
   if (project.owner != sender) return
   if (project.admins.indexOf(sender) == -1) return
 
-  projectContent = new ContentProject(buildMappingTableId(projectId, contentId))
-  projectContent.project = projectId
-  projectContent.content = contentId
-  projectContent.save()
+  content.project = projectId
+  content.save()
 }
 
 function assignContentToPlatform(sender: string, platformId: string, contentId: string) {
-  let platformContent = ContentPlatform.load(buildMappingTableId(platformId, contentId))
-  if (platformContent != null) return
+
   let platform = Platform.load(platformId)
   if (platform == null) return
   let content = Content.load(contentId)
@@ -310,39 +261,18 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
 
-  platformContent = new ContentPlatform(buildMappingTableId(platformId, contentId))
-  platformContent.content = contentId
-  platformContent.platform = platformId
-  platformContent.save()
+  content.platform = platformId
+  content.save()
 
 }
 
-function unassignContentFromPlatform(sender: string, platformId: string, contentId: string) {
+function unassignContent(sender: string, contentId: string) {
   let content = Content.load(contentId)
   if (content == null) return
-  let platformContent = ContentPlatform.load(buildMappingTableId(platformId, contentId))
-  if (platformContent == null) return
-  let platform = Platform.load(platformContent.platform)
-  if (platform == null) return
 
-  /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender) return
-  if (platform.admins.indexOf(sender) == -1) return
-  store.remove('ContentPlatform', buildMappingTableId(platformId, contentId))
-}
-
-function unassignContentFromProject(sender: string, contentId: string, projectId: string) {
-  let content = Content.load(contentId)
-  if (content == null) return
-  let projectContent = ContentProject.load(buildMappingTableId(projectId, contentId))
-  if (projectContent == null) return
-  let project = Project.load(projectContent.project)
-  if (project == null) return
-
-  /* check if sender is owner OR admin of project */
-  if (project.owner != sender) return
-  if (project.admins.indexOf(sender) == -1) return
-  store.remove('ContentProject', buildMappingTableId(projectId, contentId))
+  content.project = null
+  content.platform = null
+  content.save()
 }
 
 function platformApproveAdmin(sender: string, platformId: string, admins: string[]) {
@@ -404,3 +334,12 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
     }
   }
 }
+
+function unassignProjectFromPlatform(sender: string, projectId: string) {
+  let project = Project.load(projectId)
+  if (project == null) return
+
+  project.platform = null
+  project.save()
+}
+
