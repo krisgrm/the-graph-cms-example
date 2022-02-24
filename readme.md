@@ -73,31 +73,31 @@ shapes:
 ```
 
 #### Init space
-Data: `0x0101`
+- Data: `0x0101`
 
 #### Create platform
-Data: `0x0201 + bytes(space-id)`
+- Data: `0x0201 + bytes(space-id)`
 #### Assign content to platform
-Data: `0x0202 + bytes(content-id + "_" + platform-id)`
+- Data: `0x0202 + bytes(content-id + "_" + platform-id)`
 #### Approve admin of platform
-Data: `0x0203 + bytes(platform-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
+- Data: `0x0203 + bytes(platform-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
 #### Revoke admin of platform
-Data: `0x0204 + bytes(platform-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
+- Data: `0x0204 + bytes(platform-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
 #### Assign project to platform
-Data: `0x0205 + bytes(project-id + "_" + platform-id)`
+- Data: `0x0205 + bytes(project-id + "_" + platform-id)`
 
 #### Create project
-Data: `0x0301`
+- Data: `0x0301`
 #### Assign content to project
-Data: `0x0302 + bytes(content-id + "_" + project-id)`
+- Data: `0x0302 + bytes(content-id + "_" + project-id)`
 #### Approve admin of project
-Data: `0x0303 + bytes(project-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
+- Data: `0x0303 + bytes(project-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
 #### Revoke admin of project
-Data: `0x0304 + bytes(project-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
+- Data: `0x0304 + bytes(project-id + "_" admin-address + "_" admin-address + "_" admin-address + "_" ...)`
 
 #### Create Content
-Data: `0x0401 + bytes(ipfs-hash-without-leading-0x1220)`
+- Data: `0x0401 + bytes(ipfs-hash-without-leading-0x1220)`
 #### Delete Content
-Data: `0x0402 + bytes(content-id)`
+- Data: `0x0402 + bytes(content-id)`
 #### Unassign Content
-Data: `0x0403 + bytes(content-id)`
+- Data: `0x0403 + bytes(content-id)`
