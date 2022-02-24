@@ -68,12 +68,12 @@ export function handleStateChange(event: StateChange): void {
 
   // init space
   if (noun.toString() == "01" && verb.toString() == "01") {
-    let spaceId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let spaceId = buildEntityIdFromEvent(event)
     initSpace(event.params.author.toString(), spaceId)
   }
   // platform create
   if (noun.toString() == "02" && verb.toString() == "01") {
-    let platformId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let platformId = buildEntityIdFromEvent(event)
     let spaceId = body.toString() // TODO correct parsing
     createPlatform(event.params.author.toString(), platformId, spaceId)
   }
@@ -121,7 +121,7 @@ export function handleStateChange(event: StateChange): void {
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {
-    let projectId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let projectId = buildEntityIdFromEvent(event)
     createProject(event.params.author.toString(), projectId)
   }
   // project assign content
@@ -157,7 +157,7 @@ export function handleStateChange(event: StateChange): void {
 
   // content create
   if (noun.toString() == "04" && verb.toString() == "01") {
-    let contentId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let contentId = buildEntityIdFromEvent(event)
     let metadata = body.toString()
     createContent(event.params.author.toString(), contentId, metadata)
   }
@@ -166,6 +166,14 @@ export function handleStateChange(event: StateChange): void {
     let contentId = body.toString()
     deleteContent(event.params.author.toString(), contentId)
   }
+}
+
+function buildEntityIdFromEvent(event: StateChange) {
+  return event.transaction.hash.toHex() + "-" + event.logIndex.toString();
+}
+
+function buildMappingTableId(leftId: string, rightId: string) {
+  return leftId + "-" + rightId;
 }
 
 function initSpace(owner: string, id: string) {
@@ -184,12 +192,12 @@ function createPlatform(sender: string, id: string, spaceId: string) {
   if (space == null) return
   /* if owner is not space owner, return */
   if (space.owner != sender) return
-  let platformSpace = PlatformSpace.load(spaceId + "-" + id)
+  let platformSpace = PlatformSpace.load(buildMappingTableId(spaceId, id))
   if (platformSpace != null) return
 
   platform = new Platform(id)
   platform.owner = sender
-  platformSpace = new PlatformSpace(spaceId + "-" + id)
+  platformSpace = new PlatformSpace(buildMappingTableId(spaceId, id))
   platformSpace.space = spaceId
   platformSpace.platform = id
   platform.save()
@@ -205,7 +213,7 @@ function createProject(owner : string, id: string): void {
 
 function assignProjectToPlatform(sender: string, platformId : string, projectId: string) {
 
-  let platformProject = ProjectPlatform.load(platformId + "-" + projectId)
+  let platformProject = ProjectPlatform.load(buildMappingTableId(platformId, projectId))
   if (platformProject != null) return
   let platform = Platform.load(platformId)
   if (platform == null) return
@@ -216,7 +224,7 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
 
-  platformProject = new ProjectPlatform(platformId + "-" + projectId)
+  platformProject = new ProjectPlatform(buildMappingTableId(platformId, projectId))
   platformProject.project = projectId
   platformProject.platform = platformId
   platformProject.save()
@@ -229,7 +237,7 @@ TODO if we improve schema, we could access platform from project entity..
 function unassignProjectFromPlatform(sender: string, platformId: string, projectId: string) {
   let project = Project.load(projectId)
   if (project == null) return
-  let platformProject = ProjectPlatform.load(platformId + "-" + projectId)
+  let platformProject = ProjectPlatform.load(buildMappingTableId(platformId, projectId))
   if (platformProject == null) return
   let platform = Platform.load(platformProject.platform)
   if (platform == null) return
@@ -237,7 +245,7 @@ function unassignProjectFromPlatform(sender: string, platformId: string, project
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
-  store.remove('ProjectPlatform', platformId + "-" + projectId)
+  store.remove('ProjectPlatform', buildMappingTableId(platformId, projectId))
 }
 
 function createContent(sender: string, contentId: string, metadata: string): void {
@@ -265,7 +273,7 @@ if platformId is null, then content is assigned to project
 if platformId is not null, then content is assigned to platform
  */
 function assignContentToProject(sender: string, projectId: string, contentId: string) {
-  let projectContent = ContentProject.load(projectId + "-" + contentId)
+  let projectContent = ContentProject.load(buildMappingTableId(projectId, contentId))
   if (projectContent != null) return
   let project = Project.load(projectId)
   if (project == null) return
@@ -276,14 +284,14 @@ function assignContentToProject(sender: string, projectId: string, contentId: st
   if (project.owner != sender) return
   if (project.admins.indexOf(sender) == -1) return
 
-  projectContent = new ContentProject(projectId + "-" + contentId)
+  projectContent = new ContentProject(buildMappingTableId(projectId, contentId))
   projectContent.project = projectId
   projectContent.content = contentId
   projectContent.save()
 }
 
 function assignContentToPlatform(sender: string, platformId: string, contentId: string) {
-  let platformContent = ContentPlatform.load(platformId + "-" + contentId)
+  let platformContent = ContentPlatform.load(buildMappingTableId(platformId, contentId))
   if (platformContent != null) return
   let platform = Platform.load(platformId)
   if (platform == null) return
@@ -294,7 +302,7 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
 
-  platformContent = new ContentPlatform(platformId + "-" + contentId)
+  platformContent = new ContentPlatform(buildMappingTableId(platformId, contentId))
   platformContent.content = contentId
   platformContent.platform = platformId
   platformContent.save()
@@ -304,7 +312,7 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
 function unassignContentFromPlatform(sender: string, platformId: string, contentId: string) {
   let content = Content.load(contentId)
   if (content == null) return
-  let platformContent = ContentPlatform.load(platformId + "-" + contentId)
+  let platformContent = ContentPlatform.load(buildMappingTableId(platformId, contentId))
   if (platformContent == null) return
   let platform = Platform.load(platformContent.platform)
   if (platform == null) return
@@ -312,13 +320,13 @@ function unassignContentFromPlatform(sender: string, platformId: string, content
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender) return
   if (platform.admins.indexOf(sender) == -1) return
-  store.remove('ContentPlatform', platformId + "-" + contentId)
+  store.remove('ContentPlatform', buildMappingTableId(platformId, contentId))
 }
 
 function unassignContentFromProject(sender: string, contentId: string, projectId: string) {
   let content = Content.load(contentId)
   if (content == null) return
-  let projectContent = ContentProject.load(projectId + "-" + contentId)
+  let projectContent = ContentProject.load(buildMappingTableId(projectId, contentId))
   if (projectContent == null) return
   let project = Project.load(projectContent.project)
   if (project == null) return
@@ -326,7 +334,7 @@ function unassignContentFromProject(sender: string, contentId: string, projectId
   /* check if sender is owner OR admin of project */
   if (project.owner != sender) return
   if (project.admins.indexOf(sender) == -1) return
-  store.remove('ContentProject', projectId + "-" + contentId)
+  store.remove('ContentProject', buildMappingTableId(projectId, contentId))
 }
 
 function platformApproveAdmin(sender: string, platformId: string, admins: string[]) {
@@ -336,9 +344,9 @@ function platformApproveAdmin(sender: string, platformId: string, admins: string
 
   for (let i = 0; i < admins.length; i++) {
     if (platform.admins.indexOf(admins[i]) == -1) {
-      let userPlatform = UserPlatform.load(admins[i] + "-" + platformId)
+      let userPlatform = UserPlatform.load(buildMappingTableId(admins[i], platformId))
       if (userPlatform == null) {
-        userPlatform = new UserPlatform(admins[i] + "-" + platformId)
+        userPlatform = new UserPlatform(buildMappingTableId(admins[i], platformId))
         userPlatform.user = admins[i]
         userPlatform.platform = platformId
         userPlatform.save()
@@ -354,7 +362,7 @@ function platformRevokeAdmin(sender: string, platformId: string, admins: string[
 
   for (let i = 0; i < admins.length; i++) {
     if (platform.admins.indexOf(admins[i]) != -1) {
-      store.remove('UserPlatform', admins[i] + "-" + platformId)
+      store.remove('UserPlatform', buildMappingTableId(admins[i], platformId))
     }
   }
 }
@@ -366,9 +374,9 @@ function projectApproveAdmin(sender: string, projectId: string, admins: string[]
 
   for (let i = 0; i < admins.length; i++) {
     if (project.admins.indexOf(admins[i]) == -1) {
-      let userProject = UserProject.load(admins[i] + "-" + projectId)
+      let userProject = UserProject.load(buildMappingTableId(admins[i], projectId))
       if (userProject == null) {
-        userProject = new UserProject(admins[i] + "-" + projectId)
+        userProject = new UserProject(buildMappingTableId(admins[i], projectId))
         userProject.user = admins[i]
         userProject.project = projectId
         userProject.save()
@@ -384,7 +392,7 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
 
   for (let i = 0; i < admins.length; i++) {
     if (project.admins.indexOf(admins[i]) != -1) {
-      store.remove('UserProject', admins[i] + "-" + projectId)
+      store.remove('UserProject', buildMappingTableId(admins[i], projectId))
     }
   }
 }
