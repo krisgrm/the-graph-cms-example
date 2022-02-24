@@ -2,7 +2,7 @@
   "name": "cms",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
+    "codegen": "graph codegen subgraph-goerli.yaml",
     "build": "graph build",
     "deploy-goerli": "graph deploy --node https://api.thegraph.com/deploy/ krisgrm/cms subgraph-goerli.yaml",
     "deploy-rinkeby": "graph deploy --node https://api.thegraph.com/deploy/ krisgrm/cms-rinkeby subgraph-rinkeby.yaml",
