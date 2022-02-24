@@ -3,7 +3,6 @@ import { StateChange } from "../generated/CMS/CMS"
 import {
   Content, ContentPlatform, ContentProject,
   Platform,
-  PlatformSpace,
   Project,
   ProjectPlatform,
   Space, User,
