@@ -54,116 +54,122 @@ export function handleStateChange(event: StateChange): void {
 
   // event.params.data has starting 0x and then header and body.
   // first 4 characters are header, rest is body
-  let header = event.params.data.toHex().slice(2, 6)
-  let body = event.params.data.toHex().slice(6)
+  const header = event.params.data.toHex().slice(2, 6)
+  const body = event.params.data.toHex().slice(6)
   log.info("header: {}", [header])
   log.info("body: {}", [body])
 
   // header byte 1 is the noun (space, project, platform, content) byte 2 is the verb (create, assign, unassign, approve, revoke)
-  let noun = header.slice(0, 2)
-  let verb = header.slice(2, 4)
+  const noun = header.slice(0, 2)
+  const verb = header.slice(2, 4)
 
   log.info("noun: {}, verb: {}", [noun.toString(), verb.toString()])
   log.info("body: {}", [body.toString()])
 
   // init space
   if (noun.toString() == "01" && verb.toString() == "01") {
-    let spaceId = buildEntityIdFromEvent(event)
+    const spaceId = buildEntityIdFromEvent(event)
     initSpace(event.params.author.toString(), spaceId)
   }
   // platform create
   if (noun.toString() == "02" && verb.toString() == "01") {
-    let platformId = buildEntityIdFromEvent(event)
-    let spaceId = body.toString() // TODO correct parsing
+    const platformId = buildEntityIdFromEvent(event)
+    const spaceId = body.toString() // TODO correct parsing
     createPlatform(event.params.author.toString(), platformId, spaceId)
   }
   // platform assign content
   if (noun.toString() == "02" && verb.toString() == "02") {
     // TODO improve parsing logic after consulting with team
-    let contentId = body.toString().split("_")[0]
-    let platformId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const contentId = bodyParts[0]
+    const platformId = bodyParts[1]
     assignContentToPlatform(event.params.author.toString(),  platformId, contentId)
   }
   // platform unassign content
   if (noun.toString() == "02" && verb.toString() == "03") {
     // TODO improve parsing logic after consulting with team
-    let contentId = body.toString().split("_")[0]
-    let platformId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const contentId = bodyParts[0]
+    const platformId = bodyParts[1]
     unassignContentFromPlatform(event.params.author.toString(), platformId, contentId)
   }
   // platform approve admin
   if (noun.toString() == "02" && verb.toString() == "04") {
     // TODO improve parsing logic after consulting with team
-    let platformId = body.toString().split("_")[0]
-    let admins = body.toString().split("_").slice(1)
+    const platformId = body.toString().split("_")[0]
+    const admins = body.toString().split("_").slice(1)
     platformApproveAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform revoke admin
   if (noun.toString() == "02" && verb.toString() == "05") {
     // TODO improve parsing logic after consulting with team
-    let platformId = body.toString().split("_")[0]
-    let admins = body.toString().split("_").slice(1)
+    const platformId = body.toString().split("_")[0]
+    const admins = body.toString().split("_").slice(1)
     platformRevokeAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform assign project
   if (noun.toString() == "02" && verb.toString() == "06") {
     // TODO improve parsing logic after consulting with team
-    let projectId = body.toString().split("_")[0]
-    let platformId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const projectId = bodyParts[0]
+    const platformId = bodyParts[1]
     assignProjectToPlatform(event.params.author.toString(), platformId, projectId)
   }
   // platform unassign project
   if (noun.toString() == "02" && verb.toString() == "07") {
     // TODO improve parsing logic after consulting with team
-    let projectId = body.toString().split("_")[0]
-    let platformId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const projectId = bodyParts[0]
+    const platformId = bodyParts[1]
     unassignProjectFromPlatform(event.params.author.toString(), platformId, projectId)
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {
-    let projectId = buildEntityIdFromEvent(event)
+    const projectId = buildEntityIdFromEvent(event)
     createProject(event.params.author.toString(), projectId)
   }
   // project assign content
   if (noun.toString() == "03" && verb.toString() == "02") {
     // TODO improve parsing logic after consulting with team
-    let contentId = body.toString().split("_")[0]
-    let projectId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const contentId = bodyParts[0]
+    const projectId = bodyParts[1]
     assignContentToProject(event.params.author.toString(), contentId, projectId)
   }
   // project unassign content
   if (noun.toString() == "03" && verb.toString() == "03") {
     // TODO improve parsing logic after consulting with team
-    let contentId = body.toString().split("_")[0]
-    let projectId = body.toString().split("_")[1]
+    const bodyParts = body.toString().split("_");
+    const contentId = bodyParts[0]
+    const projectId = bodyParts[1]
     unassignContentFromProject(event.params.author.toString(), contentId, projectId)
   }
   // project approve admin
   if (noun.toString() == "03" && verb.toString() == "04") {
     // TODO parse body to retrieve ID and admins
     // TODO improve parsing logic after consulting with team
-    let projectId = body.toString().split("_")[0]
-    let admins = body.toString().split("_").slice(1)
+    const projectId = body.toString().split("_")[0]
+    const admins = body.toString().split("_").slice(1)
     projectApproveAdmin(event.params.author.toString(), projectId, admins)
   }
   // project revoke admin
   if (noun.toString() == "03" && verb.toString() == "05") {
     // TODO parse body to retrieve ID and admins
     // TODO improve parsing logic after consulting with team
-    let projectId = body.toString().split("_")[0]
-    let admins = body.toString().split("_").slice(1)
+    const projectId = body.toString().split("_")[0]
+    const admins = body.toString().split("_").slice(1)
     projectRevokeAdmin(event.params.author.toString(), projectId, admins)
   }
 
   // content create
   if (noun.toString() == "04" && verb.toString() == "01") {
-    let contentId = buildEntityIdFromEvent(event)
-    let metadata = body.toString()
+    const contentId = buildEntityIdFromEvent(event)
+    const metadata = body.toString()
     createContent(event.params.author.toString(), contentId, metadata)
   }
   // content delete
   if (noun.toString() == "04" && verb.toString() == "02") {
-    let contentId = body.toString()
+    const contentId = body.toString()
     deleteContent(event.params.author.toString(), contentId)
   }
 }
