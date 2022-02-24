@@ -6,7 +6,7 @@ import {
   PlatformSpace,
   Project,
   ProjectPlatform,
-  Space,
+  Space, User,
   UserPlatform,
   UserProject
 } from "../generated/schema";
@@ -178,11 +178,18 @@ function buildMappingTableId(leftId: string, rightId: string) {
 
 function initSpace(owner: string, id: string) {
   let space = Space.load(id)
-  if (space == null) {
-    space = new Space(id)
-    space.owner = owner
-    space.save()
+  if (space != null) return
+   space = new Space(id)
+
+  // get or create owner
+  let user = User.load(owner)
+  if (user == null) {
+    user = new User(owner)
+    user.save()
   }
+
+  space.owner = owner
+  space.save()
 }
 
 function createPlatform(sender: string, id: string, spaceId: string) {
