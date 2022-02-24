@@ -12,8 +12,6 @@ type Platform @entity {
   id: ID!
   "owner of the platform - user who created the platform"
   owner: User!
-  "ipfs metadata hash"
-  metadata: String!
   "admins linked to this platform"
   admins: [UserPlatform!]! @derivedFrom(field: "platform")
   "projects linked to this platform"

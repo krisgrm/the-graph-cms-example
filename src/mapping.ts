@@ -1,4 +1,4 @@
-import {Address, Bytes, log} from "@graphprotocol/graph-ts"
+import {log } from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
 import {
   Content, ContentPlatform, ContentProject,
@@ -7,7 +7,7 @@ import {
   Project,
   ProjectPlatform,
   Space,
-  User, UserPlatform,
+  UserPlatform,
   UserProject
 } from "../generated/schema";
 import { store } from '@graphprotocol/graph-ts'
@@ -43,6 +43,9 @@ shapes:
 03 04 project.approve-admin
 03 05 project.revoke-admin
 
+04 01 content.create
+04 02 content.delete
+
  */
 export function handleStateChange(event: StateChange): void {
   // Entities can be loaded from the store using a string ID; this ID
@@ -65,92 +68,103 @@ export function handleStateChange(event: StateChange): void {
 
   // init space
   if (noun.toString() == "01" && verb.toString() == "01") {
-    // TODO parse body to retrieve ID
-    let spaceId = ""
+    let spaceId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
     initSpace(event.params.author.toString(), spaceId)
   }
   // platform create
   if (noun.toString() == "02" && verb.toString() == "01") {
-    // TODO parse body to retrieve ID
-    let platformId = ""
-    let spaceId = ""
+    let platformId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let spaceId = body.toString() // TODO correct parsing
     createPlatform(event.params.author.toString(), platformId, spaceId)
   }
   // platform assign content
   if (noun.toString() == "02" && verb.toString() == "02") {
-    // TODO parse body to retrieve ID
-    let contentId = ""
-    let platformId = ""
+    // TODO improve parsing logic after consulting with team
+    let contentId = body.toString().split("_")[0]
+    let platformId = body.toString().split("_")[1]
     assignContentToPlatform(event.params.author.toString(),  platformId, contentId)
   }
   // platform unassign content
   if (noun.toString() == "02" && verb.toString() == "03") {
-    // TODO parse body to retrieve ID
-    let contentId = ""
-    let platformId = ""
+    // TODO improve parsing logic after consulting with team
+    let contentId = body.toString().split("_")[0]
+    let platformId = body.toString().split("_")[1]
     unassignContentFromPlatform(event.params.author.toString(), platformId, contentId)
   }
   // platform approve admin
   if (noun.toString() == "02" && verb.toString() == "04") {
-    // TODO parse body to retrieve platformId and admin address
-    let platformId = ""
-    let admins = ["", ""]
+    // TODO improve parsing logic after consulting with team
+    let platformId = body.toString().split("_")[0]
+    let admins = body.toString().split("_").slice(1)
     platformApproveAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform revoke admin
   if (noun.toString() == "02" && verb.toString() == "05") {
-    // TODO parse body to retrieve platformId and admin address
-    let platformId = ""
-    let admins = ["", ""]
+    // TODO improve parsing logic after consulting with team
+    let platformId = body.toString().split("_")[0]
+    let admins = body.toString().split("_").slice(1)
     platformRevokeAdmin(event.params.author.toString(), platformId, admins)
   }
   // platform assign project
   if (noun.toString() == "02" && verb.toString() == "06") {
-    // TODO parse body to retrieve projectId and platformId
-    let projectId = ""
-    let platformId = ""
+    // TODO improve parsing logic after consulting with team
+    let projectId = body.toString().split("_")[0]
+    let platformId = body.toString().split("_")[1]
     assignProjectToPlatform(event.params.author.toString(), platformId, projectId)
   }
   // platform unassign project
   if (noun.toString() == "02" && verb.toString() == "07") {
-    // TODO parse body to retrieve projectId and platformId
-    let projectId = ""
-    let platformId = ""
+    // TODO improve parsing logic after consulting with team
+    let projectId = body.toString().split("_")[0]
+    let platformId = body.toString().split("_")[1]
     unassignProjectFromPlatform(event.params.author.toString(), platformId, projectId)
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {
-    // TODO parse body to retrieve projectId
-    let projectId = ""
+    let projectId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
     createProject(event.params.author.toString(), projectId)
   }
   // project assign content
   if (noun.toString() == "03" && verb.toString() == "02") {
-    // TODO parse body to retrieve ID
-    let contentId = ""
-    let projectId = ""
+    // TODO improve parsing logic after consulting with team
+    let contentId = body.toString().split("_")[0]
+    let projectId = body.toString().split("_")[1]
     assignContentToProject(event.params.author.toString(), contentId, projectId)
   }
   // project unassign content
   if (noun.toString() == "03" && verb.toString() == "03") {
-    // TODO parse body to retrieve ID
-    let contentId = ""
-    let projectId = ""
+    // TODO improve parsing logic after consulting with team
+    let contentId = body.toString().split("_")[0]
+    let projectId = body.toString().split("_")[1]
     unassignContentFromProject(event.params.author.toString(), contentId, projectId)
   }
   // project approve admin
   if (noun.toString() == "03" && verb.toString() == "04") {
     // TODO parse body to retrieve ID and admins
-    let projectId = ""
-    let admins = ["", ""]
+    // TODO improve parsing logic after consulting with team
+    let projectId = body.toString().split("_")[0]
+    let admins = body.toString().split("_").slice(1)
     projectApproveAdmin(event.params.author.toString(), projectId, admins)
   }
   // project revoke admin
   if (noun.toString() == "03" && verb.toString() == "05") {
     // TODO parse body to retrieve ID and admins
-    let projectId = ""
-    let admins = ["", ""]
+    // TODO improve parsing logic after consulting with team
+    let projectId = body.toString().split("_")[0]
+    let admins = body.toString().split("_").slice(1)
     projectRevokeAdmin(event.params.author.toString(), projectId, admins)
+  }
+
+  // content create
+  if (noun.toString() == "04" && verb.toString() == "01") {
+    let contentId = event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    let metadata = body.toString()
+    createContent(event.params.author.toString(), contentId, metadata)
+  }
+  // content delete
+  if (noun.toString() == "04" && verb.toString() == "02") {
+    let contentId = body.toString()
+    deleteContent(event.params.author.toString(), contentId)
   }
 }
 
@@ -226,13 +240,24 @@ function unassignProjectFromPlatform(sender: string, platformId: string, project
   store.remove('ProjectPlatform', platformId + "-" + projectId)
 }
 
-function createContent(owner: string, id: string, metadata: string): void {
-  let content = Content.load(id)
+function createContent(sender: string, contentId: string, metadata: string): void {
+  let content = Content.load(contentId)
   if (content != null) return
-  content = new Content(id)
-  content.owner = owner
+  content = new Content(contentId)
+  content.owner = sender
   content.metadata = metadata
   content.save()
+}
+
+function deleteContent(sender: string, contentId: string) {
+  let content = Content.load(contentId)
+  if (content == null) return
+  /* check if sender is owner */
+  if (content.owner != sender) return
+
+  // TODO call unassignContentFromProject and unassignContentFromPlatform
+
+  store.remove('Content', contentId)
 }
 
 /*
