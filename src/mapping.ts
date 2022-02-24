@@ -215,9 +215,24 @@ function createContent(sender: string, contentId: string, metadata: string) : vo
   let content = Content.load(contentId)
   if (content != null) return
   content = new Content(contentId)
+
+  // get or create owner
+  let user = User.load(sender)
+  if (user == null) {
+    user = new User(sender)
+    user.save()
+  }
+
   content.owner = sender
   content.metadata = metadata
   content.save()
+
+  // Create userContent
+  let userContentId = buildMappingTableId(sender, contentId);
+  const userContent = new UserContent(userContentId)
+  userContent.content = contentId
+  userContent.user = sender
+  userContent.save()
 }
 
 function deleteContent(sender: string, contentId: string) : void{
