@@ -199,14 +199,10 @@ function createPlatform(sender: string, id: string, spaceId: string) {
   if (space == null) return
   /* if owner is not space owner, return */
   if (space.owner != sender) return
-  let platformSpace = PlatformSpace.load(buildMappingTableId(spaceId, id))
-  if (platformSpace != null) return
 
   platform = new Platform(id)
   platform.owner = sender
-  platformSpace = new PlatformSpace(buildMappingTableId(spaceId, id))
-  platformSpace.space = spaceId
-  platformSpace.platform = id
+  platform.space = spaceId
   platform.save()
 }
 

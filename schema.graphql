@@ -4,7 +4,7 @@ type Space @entity {
   "owner of the space - user who initiated the space"
   owner: User!
   "platforms linked to this space"
-  platforms: [PlatformSpace!]! @derivedFrom(field: "space")
+  platforms: [Platform!]! @derivedFrom(field: "space")
 }
 
 type Platform @entity {
@@ -18,6 +18,8 @@ type Platform @entity {
   projects: [ProjectPlatform!]! @derivedFrom(field: "platform")
   "content linked to this platform"
   content: [ContentPlatform!]! @derivedFrom(field: "platform")
+  "platform space"
+  space: Space!
 }
 
 type Project @entity {
@@ -81,12 +83,6 @@ type UserProject @entity {
   id: ID! # Set to `${user.id}-${project.id}`
   user: User!
   project: Project!
-}
-
-type PlatformSpace @entity {
-  id: ID!
-  platform: Platform!
-  space: Space!
 }
 
 type UserPlatform @entity {
