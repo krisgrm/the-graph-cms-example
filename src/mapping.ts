@@ -292,6 +292,10 @@ function platformApproveAdmin(sender: string, platformId: string, admins: string
     const mappingTableId = buildMappingTableId(adminAddress, platformId);
     let userPlatform = UserPlatform.load(mappingTableId)
     if (userPlatform === null) {
+      if (User.load(adminAddress) === null) {
+        const user = new User(adminAddress)
+        user.save()
+      }
       userPlatform = new UserPlatform(mappingTableId)
       userPlatform.user = adminAddress
       userPlatform.platform = platformId
@@ -324,6 +328,10 @@ function projectApproveAdmin(sender: string, projectId: string, admins: string[]
     const mappingTableId = buildMappingTableId(adminAddress, projectId);
     let userProject = UserProject.load(mappingTableId)
     if (userProject === null) {
+      if (User.load(adminAddress) === null) {
+        const user = new User(adminAddress)
+        user.save()
+      }
       userProject = new UserProject(mappingTableId)
       userProject.user = adminAddress
       userProject.project = projectId
