@@ -142,14 +142,14 @@ test('Revoke platform admins success', () => {
   assert.fieldEquals('UserPlatform', thirdUserPlatformId, 'user', thirdAdminToRevoke)
   assert.fieldEquals('UserPlatform', thirdUserPlatformId, 'platform', platformId)
 
-  const assignAdminToPlatformEvent = createStateChangeEventWithBody(
+  const revokeAdminToPlatformEvent = createStateChangeEventWithBody(
     "02",
     "04",
     ownerAddress,
     platformId + "_" + firstAdminToRevoke + "_" + secondAdminToRevoke + "_" + thirdAdminToRevoke
   )
 
-  handleStateChangesEvents([assignAdminToPlatformEvent])
+  handleStateChangesEvents([revokeAdminToPlatformEvent])
 
   assert.notInStore('UserPlatform', firstUserPlatformId)
   assert.notInStore('UserPlatform', secondUserPlatformId)

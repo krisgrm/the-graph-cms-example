@@ -104,34 +104,30 @@ export function handleStateChange(event: StateChange): void {
   }
   // project assign content
   if (noun.toString() == "03" && verb.toString() == "02") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
+    const body = event.params.data.toString().slice(2)
     const bodyParts = body.toString().split("_");
     const contentId = bodyParts[0]
     const projectId = bodyParts[1]
-    assignContentToProject(eventAuthor, contentId, projectId)
+    assignContentToProject(eventAuthor, projectId, contentId)
   }
   // project approve admin
   if (noun.toString() == "03" && verb.toString() == "03") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const projectId = body.toString().split("_")[0]
-    const admins = body.toString().split("_").slice(1)
+    const bodyParts = event.params.data.toString().slice(2).split("_")
+    const projectId = bodyParts[0]
+    const admins = bodyParts.slice(1)
     projectApproveAdmin(eventAuthor, projectId, admins)
   }
   // project revoke admin
   if (noun.toString() == "03" && verb.toString() == "04") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const projectId = body.toString().split("_")[0]
-    const admins = body.toString().split("_").slice(1)
+    const bodyParts = event.params.data.toString().slice(2).split("_")
+    const projectId = bodyParts[0]
+    const admins = bodyParts.slice(1)
     projectRevokeAdmin(eventAuthor, projectId, admins)
   }
 
   // content create
   if (noun.toString() == "04" && verb.toString() == "01") {
     const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
     const contentId = buildEntityIdFromEvent(event)
     const bytes = Bytes.fromHexString("0x1220" + body);
     const metadata = encode(bytes)
@@ -139,16 +135,12 @@ export function handleStateChange(event: StateChange): void {
   }
   // content delete
   if (noun.toString() == "04" && verb.toString() == "02") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const contentId = body.toString()
+    const contentId = event.params.data.toString().slice(2)
     deleteContent(eventAuthor, contentId)
   }
   // content unassign
   if (noun.toString() == "04" && verb.toString() == "03") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const contentId = body.toString()
+    const contentId = event.params.data.toString().slice(2)
     unassignContent(eventAuthor, contentId)
   }
 }
@@ -244,7 +236,7 @@ function deleteContent(sender: string, contentId: string) : void{
   /* check if sender is owner */
   if (content.owner != sender) return
 
-  // TODO call unassignContentFromProject and unassignContentFromPlatform
+  // TODO call unassignContentFromProject and unassignContentFromPlatform and UserContent if apply
 
   store.remove('Content', contentId)
 }
@@ -261,8 +253,7 @@ function assignContentToProject(sender: string, projectId: string, contentId: st
   if (content == null) return
 
   /* check if sender is owner OR admin of project */
-  if (project.owner != sender) return
-  if (project.admins.indexOf(sender) == -1) return
+  if (project.owner != sender && !UserProject.load(buildMappingTableId(sender, projectId))) return
 
   content.project = projectId
   content.save()
@@ -330,14 +321,14 @@ function projectApproveAdmin(sender: string, projectId: string, admins: string[]
   if (project.owner != sender) return
 
   for (let i = 0; i < admins.length; i++) {
-    if (project.admins.indexOf(admins[i]) == -1) {
-      let userProject = UserProject.load(buildMappingTableId(admins[i], projectId))
-      if (userProject === null) {
-        userProject = new UserProject(buildMappingTableId(admins[i], projectId))
-        userProject.user = admins[i]
-        userProject.project = projectId
-        userProject.save()
-      }
+    const adminAddress = admins[i];
+    const mappingTableId = buildMappingTableId(adminAddress, projectId);
+    let userProject = UserProject.load(mappingTableId)
+    if (userProject === null) {
+      userProject = new UserProject(mappingTableId)
+      userProject.user = adminAddress
+      userProject.project = projectId
+      userProject.save()
     }
   }
 }
@@ -348,8 +339,10 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
   if (project.owner != sender) return
 
   for (let i = 0; i < admins.length; i++) {
-    if (project.admins.indexOf(admins[i]) != -1) {
-      store.remove('UserProject', buildMappingTableId(admins[i], projectId))
+    const mappingTableId = buildMappingTableId(admins[i], projectId);
+    const userProject = UserProject.load(mappingTableId)
+    if (userProject) {
+      store.remove('UserProject', mappingTableId)
     }
   }
 }
