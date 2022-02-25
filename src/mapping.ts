@@ -82,7 +82,7 @@ export function handleStateChange(event: StateChange): void {
   }
   // platform approve admin
   if (noun.toString() == "02" && verb.toString() == "03") {
-    const body = event.params.data.toHex().slice(6)
+    const body = event.params.data.toString().slice(2)
     log.info("body: {}", [body.toString()])
     const platformId = body.toString().split("_")[0]
     const admins = body.toString().split("_").slice(1)
@@ -203,6 +203,7 @@ function createPlatform(sender: string, id: string, spaceId: string) : void {
   platform = new Platform(id)
   platform.owner = sender
   platform.space = spaceId
+  platform.admins = []
   platform.save()
 }
 
@@ -308,16 +309,18 @@ function unassignContent(sender: string, contentId: string) : void {
 }
 
 function platformApproveAdmin(sender: string, platformId: string, admins: string[]) : void {
-  let platform = Platform.load(platformId)
+  const platform = Platform.load(platformId)
   if (platform == null) return
   if (platform.owner != sender) return
 
   for (let i = 0; i < admins.length; i++) {
-    if (platform.admins.indexOf(admins[i]) == -1) {
-      let userPlatform = UserPlatform.load(buildMappingTableId(admins[i], platformId))
+    let adminAddress = admins[i];
+    if (platform.admins.indexOf(adminAddress) == -1) {
+      let mappingTableId = buildMappingTableId(adminAddress, platformId);
+      let userPlatform = UserPlatform.load(mappingTableId)
       if (userPlatform == null) {
-        userPlatform = new UserPlatform(buildMappingTableId(admins[i], platformId))
-        userPlatform.user = admins[i]
+        userPlatform = new UserPlatform(mappingTableId)
+        userPlatform.user = adminAddress
         userPlatform.platform = platformId
         userPlatform.save()
       }
@@ -327,7 +330,7 @@ function platformApproveAdmin(sender: string, platformId: string, admins: string
 
 function platformRevokeAdmin(sender: string, platformId: string, admins: string[]) : void {
   let platform = Platform.load(platformId)
-  if (platform == null) return
+  if (platform === null) return
   if (platform.owner != sender) return
 
   for (let i = 0; i < admins.length; i++) {
@@ -339,13 +342,13 @@ function platformRevokeAdmin(sender: string, platformId: string, admins: string[
 
 function projectApproveAdmin(sender: string, projectId: string, admins: string[]) : void {
   let project = Project.load(projectId)
-  if (project == null) return
+  if (project === null) return
   if (project.owner != sender) return
 
   for (let i = 0; i < admins.length; i++) {
     if (project.admins.indexOf(admins[i]) == -1) {
       let userProject = UserProject.load(buildMappingTableId(admins[i], projectId))
-      if (userProject == null) {
+      if (userProject === null) {
         userProject = new UserProject(buildMappingTableId(admins[i], projectId))
         userProject.user = admins[i]
         userProject.project = projectId
