@@ -35,7 +35,6 @@ test('Assign content to project success', () => {
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
   const project = new Project(projectId)
   project.owner = ownerAddress
-  project.admins = []
   project.save()
 
   const assignContentEvent = createStateChangeEventWithBody(
@@ -63,7 +62,6 @@ test('Approve project admins success', () => {
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
   const project = new Project(projectId)
   project.owner = ownerAddress
-  project.admins = []
   project.save()
 
   const assignAdminToProjectEvent = createStateChangeEventWithBody(
@@ -97,7 +95,6 @@ test('Revoke project admins success', () => {
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
   const project = new Project(projectId)
   project.owner = ownerAddress
-  project.admins = []
   project.save()
 
   const firstUserProjectId = buildMappingTableId(firstAdminToRevoke, projectId)
