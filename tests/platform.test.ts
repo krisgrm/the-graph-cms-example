@@ -1,55 +1,7 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
-import {
-  createStateChangeEvent,
-  createStateChangeEventWithBody,
-  createStateChangeEventWithHexBody,
-  handleStateChangesEvents
-} from "./helpers/helpers";
+import { createStateChangeEventWithBody, handleStateChangesEvents } from "./helpers/helpers";
 import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
-import {Bytes, log} from "@graphprotocol/graph-ts/index";
 import {Content, Platform, Project, Space, User, UserPlatform} from "../generated/schema";
-
-test('Create content success', () => {
-  // 15cd85e01f144ced0c812bcc45c933ef4abdc69ed77e557acc669700b58f6e80 -> ipfs 32 bytes hash (without prefix 1220 since ipfs only supports v0 CID)
-  const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
-  const createContentEvent = createStateChangeEventWithHexBody(
-    "04", // content
-    "01", // create
-    ownerAddress,
-    '15cd85e01f144ced0c812bcc45c933ef4abdc69ed77e557acc669700b58f6e80'
-  )
-
-  handleStateChangesEvents([createContentEvent])
-
-  const contentId : string = buildEntityIdFromEvent(createContentEvent)
-  assert.fieldEquals('Content', contentId, 'owner', ownerAddress)
-  assert.fieldEquals('Content', contentId, 'metadata', 'QmPom35pEPJRSUnVvsurU7PoENCbRjH3ns2PuHb7PqdwmH')
-
-  assert.fieldEquals('User', ownerAddress, 'id', ownerAddress)
-  assert.fieldEquals('User', ownerAddress, 'id', ownerAddress)
-
-  let userContentId = ownerAddress + '-' + contentId;
-  assert.fieldEquals('UserContent', userContentId, 'user', ownerAddress)
-  assert.fieldEquals('UserContent', userContentId, 'content', contentId)
-  assert.fieldEquals('UserContent', userContentId, 'content', contentId)
-
-  clearStore()
-})
-
-test('Create space success', () => {
-  const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
-  const createSpaceEvent = createStateChangeEvent(
-    "01", // space
-    "01", // create
-    ownerAddress
-  )
-  const spaceId: string = buildEntityIdFromEvent(createSpaceEvent)
-  handleStateChangesEvents([createSpaceEvent])
-
-  assert.fieldEquals('Space', spaceId, 'owner', ownerAddress)
-
-  clearStore()
-})
 
 test('Create platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
@@ -241,24 +193,38 @@ test('Assign project to platform success', () => {
   clearStore()
 })
 
-test('Create space with two platforms', () => {
+test('Unassign project from platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
-  const createSpaceEvent = createStateChangeEvent("01", "01", ownerAddress)
-  const spaceId: string = buildEntityIdFromEvent(createSpaceEvent)
+  const user = new User(ownerAddress)
+  user.save()
 
-  const createPlatformEvent = createStateChangeEventWithBody("02", "01", ownerAddress, spaceId)
-  const platformId: string = buildEntityIdFromEvent(createPlatformEvent)
+  const spaceId = 'a16081f360e3847006db660bae1c6d1b2e17ec2a-1';
+  const space = new Space(spaceId)
+  space.owner = ownerAddress
+  space.save()
 
-  const createAnotherPlatformEvent = createStateChangeEventWithBody("02", "01", ownerAddress, spaceId)
-  const anotherPlatformId: string = buildEntityIdFromEvent(createPlatformEvent)
+  const platformId = 'a16081f360e3847006db660bae1c6d1b2e17ec2c-3';
+  const platform = new Platform(platformId)
+  platform.owner = ownerAddress
+  platform.space = spaceId
+  platform.admins = []
+  platform.save()
 
-  handleStateChangesEvents([createSpaceEvent, createPlatformEvent, createAnotherPlatformEvent])
+  const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
+  const project = new Project(projectId)
+  project.owner = ownerAddress
+  project.platform = platformId
+  project.save()
 
-  assert.fieldEquals('Space', spaceId, 'owner', ownerAddress)
-  assert.fieldEquals('Platform', platformId, 'owner', ownerAddress)
-  assert.fieldEquals('Platform', platformId, 'space', spaceId)
-  assert.fieldEquals('Platform', anotherPlatformId, 'owner', ownerAddress)
-  assert.fieldEquals('Platform', anotherPlatformId, 'space', spaceId)
+  const assignProjectToPlatformEvent = createStateChangeEventWithBody(
+    "02", // platform
+    "06", // create
+    ownerAddress,
+    projectId
+  )
+  handleStateChangesEvents([assignProjectToPlatformEvent])
+
+  assert.fieldEquals('Project', projectId, 'platform', "null")
 
   clearStore()
 })

@@ -94,9 +94,7 @@ export function handleStateChange(event: StateChange): void {
   }
   // platform unassign project
   if (noun.toString() == "02" && verb.toString() == "06") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const projectId = body.toString()
+    const projectId = event.params.data.toString().slice(2)
     unassignProjectFromPlatform(eventAuthor, projectId)
   }
   // project create
