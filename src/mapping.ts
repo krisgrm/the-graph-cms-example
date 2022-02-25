@@ -1,14 +1,6 @@
-import {Bytes, log} from "@graphprotocol/graph-ts"
+import { Bytes, log, store } from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
-import {
-  Content,
-  Platform,
-  Project,
-  Space, User, UserContent,
-  UserPlatform,
-  UserProject
-} from "../generated/schema";
-import { store } from '@graphprotocol/graph-ts'
+import { Content, Platform, Project, Space, User, UserContent, UserPlatform, UserProject } from "../generated/schema";
 import { encode } from "as-base58";
 
 /*
@@ -63,7 +55,6 @@ export function handleStateChange(event: StateChange): void {
   // init space
   if (noun.toString() == "01" && verb.toString() == "01") {
     const spaceId = buildEntityIdFromEvent(event)
-    log.info("space id to create {}", [spaceId])
     initSpace(eventAuthor, spaceId)
   }
   // platform create
@@ -96,9 +87,7 @@ export function handleStateChange(event: StateChange): void {
   }
   // platform assign project
   if (noun.toString() == "02" && verb.toString() == "05") {
-    const body = event.params.data.toHex().slice(6)
-    log.info("body: {}", [body.toString()])
-    const bodyParts = body.toString().split("_");
+    const bodyParts = event.params.data.toString().slice(2).split("_");
     const projectId = bodyParts[0]
     const platformId = bodyParts[1]
     assignProjectToPlatform(eventAuthor, platformId, projectId)
@@ -221,8 +210,7 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   if (project == null) return
 
   /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender) return
-  if (platform.admins.indexOf(sender) == -1) return
+  if (platform.owner != sender && !UserPlatform.load(buildMappingTableId(sender, platformId))) return
 
   project.platform = platformId
   project.save()
@@ -290,7 +278,7 @@ function assignContentToPlatform(sender: string, platformId: string, contentId: 
   if (content == null) return
 
   /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender && platform.admins && platform.admins.indexOf(sender) == -1) return
+  if (platform.owner != sender && !UserPlatform.load(buildMappingTableId(sender, platformId))) return
 
   content.platform = platformId
   content.save()

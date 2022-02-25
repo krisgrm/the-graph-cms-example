@@ -7,7 +7,7 @@ import {
 } from "./helpers/helpers";
 import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
 import {Bytes, log} from "@graphprotocol/graph-ts/index";
-import {Content, Platform, Space, User, UserPlatform} from "../generated/schema";
+import {Content, Platform, Project, Space, User, UserPlatform} from "../generated/schema";
 
 test('Create content success', () => {
   // 15cd85e01f144ced0c812bcc45c933ef4abdc69ed77e557acc669700b58f6e80 -> ipfs 32 bytes hash (without prefix 1220 since ipfs only supports v0 CID)
@@ -107,6 +107,7 @@ test('Assign content to platform success', () => {
   handleStateChangesEvents([createPlatformEvent])
 
   assert.fieldEquals('Content', contentId, 'platform', platformId)
+
   clearStore()
 })
 
@@ -201,6 +202,41 @@ test('Revoke platform admins success', () => {
   assert.notInStore('UserPlatform', firstUserPlatformId)
   assert.notInStore('UserPlatform', secondUserPlatformId)
   assert.notInStore('UserPlatform', thirdUserPlatformId)
+
+  clearStore()
+})
+
+test('Assign project to platform success', () => {
+  const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
+  const user = new User(ownerAddress)
+  user.save()
+
+  const spaceId = 'a16081f360e3847006db660bae1c6d1b2e17ec2a-1';
+  const space = new Space(spaceId)
+  space.owner = ownerAddress
+  space.save()
+
+  const platformId = 'a16081f360e3847006db660bae1c6d1b2e17ec2c-3';
+  const platform = new Platform(platformId)
+  platform.owner = ownerAddress
+  platform.space = spaceId
+  platform.admins = []
+  platform.save()
+
+  const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
+  const project = new Project(projectId)
+  project.owner = ownerAddress
+  project.save()
+
+  const assignProjectToPlatformEvent = createStateChangeEventWithBody(
+    "02", // platform
+    "05", // create
+    ownerAddress,
+    projectId + '_' + platformId
+  )
+  handleStateChangesEvents([assignProjectToPlatformEvent])
+
+  assert.fieldEquals('Project', projectId, 'platform', platformId)
 
   clearStore()
 })
