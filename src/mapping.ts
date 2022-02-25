@@ -180,7 +180,6 @@ function createPlatform(sender: string, id: string, spaceId: string) : void {
   platform = new Platform(id)
   platform.owner = sender
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 }
 
