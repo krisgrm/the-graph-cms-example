@@ -30,7 +30,7 @@ yarn deploy-local
 ```
 
 ### Contract deployed on rinkeby/goerli
-`0xab62F94EC37E7F8c7a7DA560C6a1B6225362Cd12`
+`0xd2971772929F177b5Fe58A336b1C9b71d5983919`
 
 ### Requests
 When subgraph is parsing the smart contract calls it has the following logic:
@@ -77,6 +77,9 @@ shapes:
 
 #### Create platform
 - Data: `0x0201 + bytes(space-id)`
+- Example:
+  - SpaceId: `a05f61d4a6ebd0df97df6866aa309767dadb8679157a06885595396457cbd0ef-161`
+  - Data: `0x0201613035663631643461366562643064663937646636383636616133303937363764616462383637393135376130363838353539353339363435376362643065662d313631`
 #### Assign content to platform
 - Data: `0x0202 + bytes(content-id + "_" + platform-id)`
 #### Approve admin of platform
