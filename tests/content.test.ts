@@ -75,7 +75,6 @@ test('Unassign content success', () => {
   const platform = new Platform(platformId)
   platform.owner = ownerAddress
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 
   const contentWithPlatformId = 'a16081f360e3847006db660bae1c6d1b2e17ec2b-2';
@@ -88,7 +87,6 @@ test('Unassign content success', () => {
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
   const project = new Project(projectId)
   project.owner = ownerAddress
-  project.admins = []
   project.save()
 
   const contentWithProjectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2e-5';

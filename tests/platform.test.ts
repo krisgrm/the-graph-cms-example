@@ -128,7 +128,6 @@ test('Approve platform admins success', () => {
   const platform = new Platform(platformId)
   platform.owner = ownerAddress
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 
   const assignAdminToPlatformEvent = createStateChangeEventWithBody(
@@ -168,7 +167,6 @@ test('Revoke platform admins success', () => {
   const platform = new Platform(platformId)
   platform.owner = ownerAddress
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 
   const firstUserPlatformId = buildMappingTableId(firstAdminToRevoke, platformId)
@@ -220,7 +218,6 @@ test('Assign project to platform success', () => {
   const platform = new Platform(platformId)
   platform.owner = ownerAddress
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
@@ -255,7 +252,6 @@ test('Unassign project from platform success', () => {
   const platform = new Platform(platformId)
   platform.owner = ownerAddress
   platform.space = spaceId
-  platform.admins = []
   platform.save()
 
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
