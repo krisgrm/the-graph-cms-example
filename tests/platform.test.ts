@@ -28,6 +28,54 @@ test('Create platform success', () => {
   clearStore()
 })
 
+test('Create platform for non existing space failed', () => {
+  const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
+  const user = new User(ownerAddress)
+  user.save()
+
+  const spaceId = 'a16081f360e3847006db660bae1c6d1b2e17ec2a-1';
+  const createPlatformEvent = createStateChangeEventWithBody(
+    "02", // platform
+    "01", // create
+    ownerAddress,
+    spaceId
+  )
+  const platformId: string = buildEntityIdFromEvent(createPlatformEvent)
+  handleStateChangesEvents([createPlatformEvent])
+
+  assert.notInStore('Platform', platformId)
+
+  clearStore()
+})
+
+test('Create platform for non owned space space failed', () => {
+  const spaceOwnerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
+  const user = new User(spaceOwnerAddress)
+  user.save()
+
+  const spaceId = 'a16081f360e3847006db660bae1c6d1b2e17ec2a-1';
+  const space = new Space(spaceId)
+  space.owner = spaceOwnerAddress
+  space.save()
+
+  const senderAddress = '0x6EAAFdBC385116EE740737c0E71b155A28bd0883';
+  const sender = new User(senderAddress)
+  sender.save()
+
+  const createPlatformEvent = createStateChangeEventWithBody(
+    "02", // platform
+    "01", // create
+    senderAddress,
+    spaceId
+  )
+  const platformId: string = buildEntityIdFromEvent(createPlatformEvent)
+  handleStateChangesEvents([createPlatformEvent])
+
+  assert.notInStore('Platform', platformId)
+
+  clearStore()
+})
+
 test('Assign content to platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
   const user = new User(ownerAddress)
