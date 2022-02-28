@@ -17,7 +17,7 @@ type Platform @entity {
   "projects linked to this platform"
   projects: [Project!]! @derivedFrom(field: "platform")
   "content linked to this platform"
-  content: [Content!]! @derivedFrom(field: "platform")
+  content: [ContentPlatform!]! @derivedFrom(field: "platform")
   "platform space"
   space: Space!
 }
@@ -28,40 +28,36 @@ type Project @entity {
   "owner of the project - user who created the project"
   owner: User!
   "content linked to this project"
-  content: [Content!]! @derivedFrom(field: "project")
+  content: [ContentProject!]! @derivedFrom(field: "project")
+  "admins linked to this project"
   admins: [UserProject!]! @derivedFrom(field: "project")
+  "platform linked to this project"
   platform: Platform
 }
 
 type Content @entity {
   "unique identifier and primary key of the entity"
   id: ID!
-  "owner of the content - user who created the content"
-  owner: User!
   "ipfs metadata hash"
   metadata: String!
-  "project linked to this content"
-  project: Project
-  platform: Platform
-  "admins linked to this content"
-  admins: [UserContent!]! @derivedFrom(field: "content")
+  "projects linked to this content"
+  projects: [ContentProject!]! @derivedFrom(field: "content")
+  "platforms linked to this content"
+  platforms: [ContentPlatform!]! @derivedFrom(field: "content")
 }
 
 type User @entity {
   "unique identifier and primary key of the entity"
   id: ID! # address
-  content: [UserContent!]! @derivedFrom(field: "user")
-  platform: [UserPlatform!]! @derivedFrom(field: "user")
+  platformsAdmin: [UserPlatform!]! @derivedFrom(field: "user")
+  "projects linked to this user"
+  projectsAdmin: [UserProject!]! @derivedFrom(field: "user")
+  "projects this user is owner of"
+  projectsOwner: Project! @derivedFrom(field: "owner")
+  "platforms this user is owner of"
+  platformsOwner: Platform! @derivedFrom(field: "owner")
 }
 
-type UserContent @entity {
-  "unique identifier and primary key of the entity"
-  id: ID!
-  "content linked to this user"
-  content: Content!
-  "user linked to this content"
-  user: User!
-}
 
 type UserProject @entity {
   id: ID! # Set to `${user.id}-${project.id}`
@@ -72,5 +68,17 @@ type UserProject @entity {
 type UserPlatform @entity {
   id: ID!
   user: User!
+  platform: Platform!
+}
+
+type ContentProject @entity {
+  id: ID!
+  content: Content!
+  project: Project!
+}
+
+type ContentPlatform @entity {
+  id: ID!
+  content: Content!
   platform: Platform!
 }
