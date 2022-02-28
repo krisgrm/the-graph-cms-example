@@ -15,7 +15,7 @@ type Platform @entity {
   "admins linked to this platform"
   admins: [AdminPlatform!]! @derivedFrom(field: "platform")
   "projects linked to this platform"
-  projects: [Project!]! @derivedFrom(field: "platform")
+  projects: [ProjectPlatform!]! @derivedFrom(field: "platform")
   "content linked to this platform"
   content: [ContentPlatform!]! @derivedFrom(field: "platform")
   "platform space"
@@ -32,7 +32,7 @@ type Project @entity {
   "admins linked to this project"
   admins: [AdminProject!]! @derivedFrom(field: "project")
   "platform linked to this project"
-  platform: Platform
+  platform: [ProjectPlatform!]! @derivedFrom(field: "project")
 }
 
 type Content @entity {
@@ -50,7 +50,7 @@ type User @entity {
   "unique identifier and primary key of the entity"
   id: ID! # address
   "spaces this user is owner of"
-  spacesOwner: Space! @derivedFrom(field: "owner")
+  spacesOwner: Space @derivedFrom(field: "owner")
   "platforms this user is owner of"
   platformsOwner: [Platform!]! @derivedFrom(field: "owner")
   "projects this user is owner of"
@@ -83,5 +83,11 @@ type ContentProject @entity {
 type ContentPlatform @entity {
   id: ID!
   content: Content!
+  platform: Platform!
+}
+
+type ProjectPlatform @entity {
+  id: ID!
+  project: Project!
   platform: Platform!
 }

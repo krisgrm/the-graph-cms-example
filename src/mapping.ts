@@ -1,6 +1,17 @@
-import { Bytes, log, store } from "@graphprotocol/graph-ts"
+import {Bytes, log, store} from "@graphprotocol/graph-ts"
 import { StateChange } from "../generated/CMS/CMS"
-import { Content, Platform, Project, Space, User, ContentPlatform, ContentProject, AdminProject, AdminPlatform } from "../generated/schema";
+import {
+  Content,
+  Platform,
+  Project,
+  Space,
+  User,
+  ContentPlatform,
+  ContentProject,
+  AdminProject,
+  AdminPlatform,
+  ProjectPlatform
+} from "../generated/schema";
 import { encode } from "as-base58";
 
 /*
@@ -204,8 +215,11 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
 
-  project.platform = platformId
-  project.save()
+  /* create projectPlatform mapping */
+  let projectPlatform = new ProjectPlatform(buildMappingTableId(projectId, platformId))
+  projectPlatform.project = projectId
+  projectPlatform.platform = platformId
+  projectPlatform.save()
 }
 
 function createContent(sender: string, contentId: string, metadata: string) : void {
@@ -290,8 +304,8 @@ function unassignContentFromProject(sender: string, projectId: string, contentId
   let content = Content.load(contentId)
   if (content == null) return
 
-  /* check if sender is owner OR admin of project OR is owner OR admin of platform */
-  if (project.owner != sender && !AdminProject.load(buildMappingTableId(sender, projectId)) && !AdminPlatform.load(buildMappingTableId(sender, project.platform))) return
+  /* check if sender is owner OR admin of project */
+  if (project.owner != sender && !AdminProject.load(buildMappingTableId(sender, projectId))) return;
 
   store.remove("contentProject", contentProject.id)
 }
@@ -367,11 +381,18 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
   }
 }
 
-function unassignProjectFromPlatform(sender: string, projectId: string) : void {
+function unassignProjectFromPlatform(sender: string, projectId: string, platformId: string) : void {
+  let projectPlatform = ProjectPlatform.load(buildMappingTableId(projectId, platformId))
+  if (projectPlatform == null) return
+
+  let platform = Platform.load(platformId)
+  if (platform == null) return
   let project = Project.load(projectId)
   if (project == null) return
 
-  project.platform = null
-  project.save()
+  /* check if sender is owner OR admin of platform */
+  if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
+
+  store.remove("projectPlatform", projectPlatform.id)
 }
 
