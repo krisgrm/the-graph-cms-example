@@ -31,8 +31,8 @@ type Project @entity {
   content: [ContentProject!]! @derivedFrom(field: "project")
   "admins linked to this project"
   admins: [AdminProject!]! @derivedFrom(field: "project")
-  "platform linked to this project"
-  platform: [ProjectPlatform!]! @derivedFrom(field: "project")
+  "platforms linked to this project"
+  platforms: [ProjectPlatform!]! @derivedFrom(field: "project")
 }
 
 type Content @entity {
