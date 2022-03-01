@@ -1,7 +1,7 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import { createStateChangeEventWithBody, handleStateChangesEvents } from "./helpers/helpers";
 import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
-import {Content, Platform, Project, Space, User, UserPlatform} from "../generated/schema";
+import {Content, Platform, Project, Space, User, AdminPlatform, ProjectPlatform} from "../generated/schema";
 
 test('Create platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
@@ -88,7 +88,6 @@ test('Assign content to platform success', () => {
 
   const contentId = 'a16081f360e3847006db660bae1c6d1b2e17ec2b-2';
   const content = new Content(contentId)
-  content.owner = ownerAddress
   content.metadata = 'QmPom35pEPJRSUnVvsurU7PoENCbRjH3ns2PuHb7PqdwmH'
   content.save()
 
@@ -173,12 +172,12 @@ test('Revoke platform admins success', () => {
   const secondUserPlatformId = buildMappingTableId(secondAdminToRevoke, platformId)
   const thirdUserPlatformId = buildMappingTableId(thirdAdminToRevoke, platformId)
 
-  const firstUserPlatform = new UserPlatform(firstUserPlatformId)
+  const firstUserPlatform = new AdminPlatform(firstUserPlatformId)
   firstUserPlatform.user = firstAdminToRevoke
   firstUserPlatform.platform = platformId
   firstUserPlatform.save()
 
-  const secondUserPlatform = new UserPlatform(thirdUserPlatformId)
+  const secondUserPlatform = new AdminPlatform(thirdUserPlatformId)
   secondUserPlatform.user = thirdAdminToRevoke
   secondUserPlatform.platform = platformId
   secondUserPlatform.save()
@@ -227,7 +226,7 @@ test('Assign project to platform success', () => {
 
   const assignProjectToPlatformEvent = createStateChangeEventWithBody(
     "02", // platform
-    "05", // create
+    "05", // assign project
     ownerAddress,
     projectId + '_' + platformId
   )
@@ -257,16 +256,20 @@ test('Unassign project from platform success', () => {
   const projectId = 'a16081f360e3847006db660bae1c6d1b2e17ec2d-4';
   const project = new Project(projectId)
   project.owner = ownerAddress
-  project.platform = platformId
   project.save()
 
-  const assignProjectToPlatformEvent = createStateChangeEventWithBody(
+  const projectPlatform = new ProjectPlatform(buildMappingTableId(projectId, platformId))
+  projectPlatform.project = projectId
+  projectPlatform.platform = platformId
+  projectPlatform.save()
+
+  const unassignProjectFromPlatform = createStateChangeEventWithBody(
     "02", // platform
-    "06", // create
+    "06", // unassign project
     ownerAddress,
     projectId
   )
-  handleStateChangesEvents([assignProjectToPlatformEvent])
+  handleStateChangesEvents([unassignProjectFromPlatform])
 
   assert.fieldEquals('Project', projectId, 'platform', "null")
 
