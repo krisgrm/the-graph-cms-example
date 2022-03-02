@@ -10,7 +10,7 @@ import {
   ContentProject,
   AdminProject,
   AdminPlatform,
-  ProjectPlatform
+  PlatformProject
 } from "../generated/schema";
 import { encode } from "as-base58";
 
@@ -217,11 +217,11 @@ function assignProjectToPlatform(sender: string, platformId : string, projectId:
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
 
-  /* create projectPlatform mapping */
-  let projectPlatform = new ProjectPlatform(buildMappingTableId(projectId, platformId))
-  projectPlatform.project = projectId
-  projectPlatform.platform = platformId
-  projectPlatform.save()
+  /* create platformProject mapping */
+  let platformProject = new PlatformProject(buildMappingTableId(projectId, platformId))
+  platformProject.project = projectId
+  platformProject.platform = platformId
+  platformProject.save()
 }
 
 function createContent(sender: string, contentId: string, metadata: string) : void {
@@ -384,8 +384,8 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
 }
 
 function unassignProjectFromPlatform(sender: string, projectId: string, platformId: string) : void {
-  let projectPlatform = ProjectPlatform.load(buildMappingTableId(projectId, platformId))
-  if (projectPlatform == null) return
+  let platformProject = PlatformProject.load(buildMappingTableId(projectId, platformId))
+  if (platformProject == null) return
 
   let platform = Platform.load(platformId)
   if (platform == null) return
@@ -395,6 +395,6 @@ function unassignProjectFromPlatform(sender: string, projectId: string, platform
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
 
-  store.remove("ProjectPlatform", projectPlatform.id)
+  store.remove("PlatformProject", platformProject.id)
 }
 

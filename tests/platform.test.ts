@@ -1,7 +1,17 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import { createStateChangeEventWithBody, handleStateChangesEvents } from "./helpers/helpers";
 import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
-import {Content, Platform, Project, Space, User, AdminPlatform, ProjectPlatform} from "../generated/schema";
+import {
+  Content,
+  Platform,
+  Project,
+  Space,
+  User,
+  AdminPlatform,
+  PlatformProject,
+  ContentProject, ContentPlatform
+} from "../generated/schema";
+import {log} from "@graphprotocol/graph-ts";
 
 test('Create platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
@@ -105,6 +115,19 @@ test('Assign content to platform success', () => {
   )
   handleStateChangesEvents([createPlatformEvent])
 
+  const contentPlatform = ContentPlatform.load(buildMappingTableId(contentId, platformId))
+
+  if (contentPlatform == null) {
+    assert.notInStore('ContentProject', buildMappingTableId(contentId, platformId))
+  } else {
+    log.info("contentProject", [contentPlatform.id])
+    assert.fieldEquals('ContentProject', contentPlatform.id, 'content', contentId)
+  }
+
+  assert.fieldEquals('ContentProject', contentId + "-" + platformId, 'project', platformId)
+
+
+
   assert.fieldEquals('Content', contentId, 'platform', platformId)
 
   clearStore()
@@ -182,10 +205,10 @@ test('Revoke platform admins success', () => {
   secondUserPlatform.platform = platformId
   secondUserPlatform.save()
 
-  assert.fieldEquals('UserPlatform', firstUserPlatformId, 'user', firstAdminToRevoke)
-  assert.fieldEquals('UserPlatform', firstUserPlatformId, 'platform', platformId)
-  assert.fieldEquals('UserPlatform', thirdUserPlatformId, 'user', thirdAdminToRevoke)
-  assert.fieldEquals('UserPlatform', thirdUserPlatformId, 'platform', platformId)
+  assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'user', firstAdminToRevoke)
+  assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'platform', platformId)
+  assert.fieldEquals('AdminPlatform', thirdUserPlatformId, 'user', thirdAdminToRevoke)
+  assert.fieldEquals('AdminPlatform', thirdUserPlatformId, 'platform', platformId)
 
   const revokeAdminToPlatformEvent = createStateChangeEventWithBody(
     "02",
@@ -196,9 +219,9 @@ test('Revoke platform admins success', () => {
 
   handleStateChangesEvents([revokeAdminToPlatformEvent])
 
-  assert.notInStore('UserPlatform', firstUserPlatformId)
-  assert.notInStore('UserPlatform', secondUserPlatformId)
-  assert.notInStore('UserPlatform', thirdUserPlatformId)
+  assert.notInStore('AdminPlatform', firstUserPlatformId)
+  assert.notInStore('AdminPlatform', secondUserPlatformId)
+  assert.notInStore('AdminPlatform', thirdUserPlatformId)
 
   clearStore()
 })
@@ -258,10 +281,10 @@ test('Unassign project from platform success', () => {
   project.owner = ownerAddress
   project.save()
 
-  const projectPlatform = new ProjectPlatform(buildMappingTableId(projectId, platformId))
-  projectPlatform.project = projectId
-  projectPlatform.platform = platformId
-  projectPlatform.save()
+  const platformProject = new PlatformProject(buildMappingTableId(projectId, platformId))
+  platformProject.project = projectId
+  platformProject.platform = platformId
+  platformProject.save()
 
   const unassignProjectFromPlatform = createStateChangeEventWithBody(
     "02", // platform
