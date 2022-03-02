@@ -20,6 +20,7 @@ test('Create content success', () => {
 
   const contentId : string = buildEntityIdFromEvent(createContentEvent)
   assert.fieldEquals('Content', contentId, 'metadata', 'QmPom35pEPJRSUnVvsurU7PoENCbRjH3ns2PuHb7PqdwmH')
+  assert.fieldEquals('Content', contentId, 'creator', ownerAddress)
 
   assert.fieldEquals('User', ownerAddress, 'id', ownerAddress)
   assert.fieldEquals('User', ownerAddress, 'id', ownerAddress)

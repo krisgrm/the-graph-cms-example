@@ -40,6 +40,8 @@ type Content @entity {
   id: ID!
   "ipfs metadata hash"
   metadata: String!
+  "creator of the content - user who created the content"
+  creator: User!
   "projects linked to this content"
   projects: [ContentProject!]! @derivedFrom(field: "content")
   "platforms linked to this content"

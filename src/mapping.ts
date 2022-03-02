@@ -235,7 +235,7 @@ function createContent(sender: string, contentId: string, metadata: string) : vo
     user = new User(sender)
     user.save()
   }
-
+  content.creator = sender
   content.metadata = metadata
   content.save()
 
