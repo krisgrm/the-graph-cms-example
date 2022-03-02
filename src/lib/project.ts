@@ -18,7 +18,10 @@ export function assignProjectToPlatform(sender: string, platformId : string, pro
   if (project == null) return
 
   /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender) return
+  if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
+
+  /* check if sender is owner OR admin of project */
+  if (project.owner != sender && !AdminProject.load(buildMappingTableId(sender, projectId))) return
 
   /* create platformProject mapping */
   let platformProject = new PlatformProject(buildMappingTableId(platformId, projectId))
@@ -38,6 +41,9 @@ export function unassignProjectFromPlatform(sender: string, platformId: string, 
 
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
+
+  /* check if sender is owner OR admin of project */
+  if (project.owner != sender && !AdminProject.load(buildMappingTableId(sender, projectId))) return
 
   store.remove("PlatformProject", platformProject.id)
 }
