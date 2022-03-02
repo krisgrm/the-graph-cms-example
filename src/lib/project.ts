@@ -1,6 +1,6 @@
 import {AdminPlatform, AdminProject, Platform, PlatformProject, Project, User} from "../../generated/schema";
-import {store} from "@graphprotocol/graph-ts";
 import {buildMappingTableId} from "./utils";
+import {store} from "@graphprotocol/graph-ts";
 
 export function createProject(owner : string, id: string): void {
   let project = Project.load(id)
@@ -18,16 +18,16 @@ export function assignProjectToPlatform(sender: string, platformId : string, pro
   if (project == null) return
 
   /* check if sender is owner OR admin of platform */
-  if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
+  if (platform.owner != sender) return
 
   /* create platformProject mapping */
-  let platformProject = new PlatformProject(buildMappingTableId(projectId, platformId))
+  let platformProject = new PlatformProject(buildMappingTableId(platformId, projectId))
   platformProject.project = projectId
   platformProject.platform = platformId
   platformProject.save()
 }
 
-export function unassignProjectFromPlatform(sender: string, projectId: string, platformId: string) : void {
+export function unassignProjectFromPlatform(sender: string, platformId: string, projectId: string) : void {
   let platformProject = PlatformProject.load(buildMappingTableId(platformId, projectId))
   if (platformProject == null) return
 

@@ -73,8 +73,8 @@ export function handleStateChange(event: StateChange): void {
   // platform assign project
   if (noun.toString() == "02" && verb.toString() == "05") {
     const bodyParts = event.params.data.toString().slice(2).split("_");
-    const projectId = bodyParts[0]
-    const platformId = bodyParts[1]
+    const platformId = bodyParts[0]
+    const projectId = bodyParts[1]
     assignProjectToPlatform(eventAuthor, platformId, projectId)
   }
   // platform unassign project
@@ -82,7 +82,7 @@ export function handleStateChange(event: StateChange): void {
     const bodyParts = event.params.data.toString().slice(2).split("_");
     const platformId = bodyParts[0]
     const projectId = bodyParts[1]
-    unassignProjectFromPlatform(eventAuthor, projectId, platformId)
+    unassignProjectFromPlatform(eventAuthor, platformId, projectId)
   }
   // project create
   if (noun.toString() == "03" && verb.toString() == "01") {

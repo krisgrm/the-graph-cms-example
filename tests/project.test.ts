@@ -1,6 +1,5 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import {createStateChangeEvent, createStateChangeEventWithBody, handleStateChangesEvents} from "./helpers/helpers";
-import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
 import {
   Content,
   Project,
@@ -9,6 +8,7 @@ import {
   ContentProject
 } from "../generated/schema";
 import {log} from "@graphprotocol/graph-ts";
+import {buildEntityIdFromEvent, buildMappingTableId} from "../src/lib/utils";
 
 test('Create project success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';

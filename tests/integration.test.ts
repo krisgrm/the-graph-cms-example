@@ -1,7 +1,7 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import { createStateChangeEvent, createStateChangeEventWithBody, handleStateChangesEvents } from "./helpers/helpers";
-import { buildEntityIdFromEvent } from "../src/mapping";
 import { Platform, Space } from "../generated/schema";
+import {buildEntityIdFromEvent} from "../src/lib/utils";
 
 test('Create space with two platforms', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';

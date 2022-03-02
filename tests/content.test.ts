@@ -3,8 +3,8 @@ import {
   createStateChangeEventWithHexBody,
   handleStateChangesEvents
 } from "./helpers/helpers";
-import { buildEntityIdFromEvent } from "../src/mapping";
 import {Content, User} from "../generated/schema";
+import {buildEntityIdFromEvent} from "../src/lib/utils";
 
 test('Create content success', () => {
   // 15cd85e01f144ced0c812bcc45c933ef4abdc69ed77e557acc669700b58f6e80 -> ipfs 32 bytes hash (without prefix 1220 since ipfs only supports v0 CID)

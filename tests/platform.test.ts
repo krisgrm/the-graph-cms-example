@@ -1,6 +1,5 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import { createStateChangeEventWithBody, handleStateChangesEvents } from "./helpers/helpers";
-import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
 import {
   Content,
   Platform,
@@ -11,7 +10,8 @@ import {
   PlatformProject,
   ContentPlatform
 } from "../generated/schema";
-import {log} from "@graphprotocol/graph-ts";
+
+import {buildEntityIdFromEvent, buildMappingTableId} from "../src/lib/utils";
 
 test('Create platform success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
@@ -120,7 +120,6 @@ test('Assign content to platform success', () => {
   if (contentPlatform == null) {
     assert.fieldEquals('ContentPlatform', "", 'content', contentId)
   } else {
-    log.info("contentProject", [contentPlatform.id])
     assert.fieldEquals('ContentPlatform', contentPlatform.id, 'content', contentId)
   }
   assert.fieldEquals('ContentPlatform', contentId + "-" + platformId, 'platform', platformId)
@@ -251,11 +250,12 @@ test('Assign project to platform success', () => {
     "02", // platform
     "05", // assign project
     ownerAddress,
-    projectId + '_' + platformId
+    platformId + "_" + projectId
   )
   handleStateChangesEvents([assignProjectToPlatformEvent])
 
-  const platformProjectId = buildMappingTableId(projectId, platformId)
+  const platformProjectId = buildMappingTableId(platformId, projectId)
+  assert.fieldEquals('PlatformProject', platformProjectId, 'platform', platformId)
   assert.fieldEquals('PlatformProject', platformProjectId, 'project', projectId)
   clearStore()
 })
