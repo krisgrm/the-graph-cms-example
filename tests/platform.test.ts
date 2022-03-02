@@ -9,7 +9,7 @@ import {
   User,
   AdminPlatform,
   PlatformProject,
-  ContentProject, ContentPlatform
+  ContentPlatform
 } from "../generated/schema";
 import {log} from "@graphprotocol/graph-ts";
 
@@ -118,17 +118,12 @@ test('Assign content to platform success', () => {
   const contentPlatform = ContentPlatform.load(buildMappingTableId(contentId, platformId))
 
   if (contentPlatform == null) {
-    assert.notInStore('ContentProject', buildMappingTableId(contentId, platformId))
+    assert.fieldEquals('ContentPlatform', "", 'content', contentId)
   } else {
     log.info("contentProject", [contentPlatform.id])
-    assert.fieldEquals('ContentProject', contentPlatform.id, 'content', contentId)
+    assert.fieldEquals('ContentPlatform', contentPlatform.id, 'content', contentId)
   }
-
-  assert.fieldEquals('ContentProject', contentId + "-" + platformId, 'project', platformId)
-
-
-
-  assert.fieldEquals('Content', contentId, 'platform', platformId)
+  assert.fieldEquals('ContentPlatform', contentId + "-" + platformId, 'platform', platformId)
 
   clearStore()
 })
@@ -163,10 +158,10 @@ test('Approve platform admins success', () => {
   const firstUserPlatformId = buildMappingTableId(firstAdminToApprove, platformId)
   const secondUserPlatformId = buildMappingTableId(secondAdminToApprove, platformId)
 
-  assert.fieldEquals('UserPlatform', firstUserPlatformId, 'user', firstAdminToApprove)
-  assert.fieldEquals('UserPlatform', firstUserPlatformId, 'platform', platformId)
-  assert.fieldEquals('UserPlatform', secondUserPlatformId, 'user', secondAdminToApprove)
-  assert.fieldEquals('UserPlatform', secondUserPlatformId, 'platform', platformId)
+  assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'user', firstAdminToApprove)
+  assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'platform', platformId)
+  assert.fieldEquals('AdminPlatform', secondUserPlatformId, 'user', secondAdminToApprove)
+  assert.fieldEquals('AdminPlatform', secondUserPlatformId, 'platform', platformId)
 
   clearStore()
 })
@@ -195,15 +190,20 @@ test('Revoke platform admins success', () => {
   const secondUserPlatformId = buildMappingTableId(secondAdminToRevoke, platformId)
   const thirdUserPlatformId = buildMappingTableId(thirdAdminToRevoke, platformId)
 
-  const firstUserPlatform = new AdminPlatform(firstUserPlatformId)
-  firstUserPlatform.user = firstAdminToRevoke
-  firstUserPlatform.platform = platformId
-  firstUserPlatform.save()
+  const firstAdminPlatform = new AdminPlatform(firstUserPlatformId)
+  firstAdminPlatform.user = firstAdminToRevoke
+  firstAdminPlatform.platform = platformId
+  firstAdminPlatform.save()
 
-  const secondUserPlatform = new AdminPlatform(thirdUserPlatformId)
-  secondUserPlatform.user = thirdAdminToRevoke
-  secondUserPlatform.platform = platformId
-  secondUserPlatform.save()
+  const secondAdminPlatform = new AdminPlatform(secondAdminToRevoke)
+  secondAdminPlatform.user = thirdAdminToRevoke
+  secondAdminPlatform.platform = platformId
+  secondAdminPlatform.save()
+
+  const thirdAdminPlatform = new AdminPlatform(thirdUserPlatformId)
+  thirdAdminPlatform.user = thirdAdminToRevoke
+  thirdAdminPlatform.platform = platformId
+  thirdAdminPlatform.save()
 
   assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'user', firstAdminToRevoke)
   assert.fieldEquals('AdminPlatform', firstUserPlatformId, 'platform', platformId)
@@ -255,8 +255,8 @@ test('Assign project to platform success', () => {
   )
   handleStateChangesEvents([assignProjectToPlatformEvent])
 
-  assert.fieldEquals('Project', projectId, 'platform', platformId)
-
+  const platformProjectId = buildMappingTableId(projectId, platformId)
+  assert.fieldEquals('PlatformProject', platformProjectId, 'project', projectId)
   clearStore()
 })
 
@@ -281,7 +281,7 @@ test('Unassign project from platform success', () => {
   project.owner = ownerAddress
   project.save()
 
-  const platformProject = new PlatformProject(buildMappingTableId(projectId, platformId))
+  const platformProject = new PlatformProject(buildMappingTableId(platformId, projectId))
   platformProject.project = projectId
   platformProject.platform = platformId
   platformProject.save()
@@ -290,11 +290,11 @@ test('Unassign project from platform success', () => {
     "02", // platform
     "06", // unassign project
     ownerAddress,
-    projectId
+    platformId + '_' + projectId
   )
   handleStateChangesEvents([unassignProjectFromPlatform])
 
-  assert.fieldEquals('Project', projectId, 'platform', "null")
+  assert.notInStore('PlatformProject', buildMappingTableId(platformId, projectId))
 
   clearStore()
 })
