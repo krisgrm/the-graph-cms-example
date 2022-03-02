@@ -378,7 +378,7 @@ function projectRevokeAdmin(sender: string, projectId: string, admins: string[])
     const mappingTableId = buildMappingTableId(admins[i], projectId);
     const userProject = AdminProject.load(mappingTableId)
     if (userProject) {
-      store.remove('UserProject', mappingTableId)
+      store.remove('AdminProject', mappingTableId)
     }
   }
 }
@@ -395,6 +395,6 @@ function unassignProjectFromPlatform(sender: string, projectId: string, platform
   /* check if sender is owner OR admin of platform */
   if (platform.owner != sender && !AdminPlatform.load(buildMappingTableId(sender, platformId))) return
 
-  store.remove("projectPlatform", projectPlatform.id)
+  store.remove("ProjectPlatform", projectPlatform.id)
 }
 

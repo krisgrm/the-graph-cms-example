@@ -1,7 +1,14 @@
 import { clearStore, test, assert } from 'matchstick-as/assembly/index'
 import {createStateChangeEvent, createStateChangeEventWithBody, handleStateChangesEvents} from "./helpers/helpers";
 import {buildEntityIdFromEvent, buildMappingTableId} from "../src/mapping";
-import {Content, Platform, Project, Space, User, AdminPlatform, AdminProject} from "../generated/schema";
+import {
+  Content,
+  Project,
+  User,
+  AdminProject,
+  ContentProject
+} from "../generated/schema";
+import {log} from "@graphprotocol/graph-ts";
 
 test('Create project success', () => {
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
@@ -22,6 +29,8 @@ test('Create project success', () => {
 })
 
 test('Assign content to project success', () => {
+  log.info("hello world", [])
+
   const ownerAddress = '0xffe64338ce6c7443858d5286463bbf4922a0056e';
   const user = new User(ownerAddress)
   user.save()
@@ -44,7 +53,15 @@ test('Assign content to project success', () => {
   )
   handleStateChangesEvents([assignContentEvent])
 
-  assert.fieldEquals('Content', contentId, 'project', projectId)
+  const contentProject = ContentProject.load(buildMappingTableId(contentId, projectId))
+  if (contentProject == null) {
+    assert.notInStore('ContentProject', buildMappingTableId(contentId, projectId))
+  } else {
+    log.info("contentProject", [contentProject.id])
+    assert.fieldEquals('ContentProject', contentProject.id, 'content', contentId)
+  }
+
+  assert.fieldEquals('ContentProject', contentId + "-" + projectId, 'project', projectId)
 
   clearStore()
 })
@@ -71,13 +88,13 @@ test('Approve project admins success', () => {
   )
 
   handleStateChangesEvents([assignAdminToProjectEvent])
-  const firstUserProjectId = buildMappingTableId(firstAdminToApprove, projectId)
-  const secondUserProjectId = buildMappingTableId(secondAdminToApprove, projectId)
+  const firstAdminProjectId = buildMappingTableId(firstAdminToApprove, projectId)
+  const secondAdminProjectId = buildMappingTableId(secondAdminToApprove, projectId)
 
-  assert.fieldEquals('UserProject', firstUserProjectId, 'user', firstAdminToApprove)
-  assert.fieldEquals('UserProject', firstUserProjectId, 'project', projectId)
-  assert.fieldEquals('UserProject', secondUserProjectId, 'user', secondAdminToApprove)
-  assert.fieldEquals('UserProject', secondUserProjectId, 'project', projectId)
+  assert.fieldEquals('AdminProject', firstAdminProjectId, 'user', firstAdminToApprove)
+  assert.fieldEquals('AdminProject', firstAdminProjectId, 'project', projectId)
+  assert.fieldEquals('AdminProject', secondAdminProjectId, 'user', secondAdminToApprove)
+  assert.fieldEquals('AdminProject', secondAdminProjectId, 'project', projectId)
 
   clearStore()
 })
@@ -96,24 +113,24 @@ test('Revoke project admins success', () => {
   project.owner = ownerAddress
   project.save()
 
-  const firstUserProjectId = buildMappingTableId(firstAdminToRevoke, projectId)
-  const secondUserProjectId = buildMappingTableId(secondAdminToRevoke, projectId)
-  const thirdUserProjectId = buildMappingTableId(thirdAdminToRevoke, projectId)
+  const firstAdminProjectId = buildMappingTableId(firstAdminToRevoke, projectId)
+  const secondAdminProjectId = buildMappingTableId(secondAdminToRevoke, projectId)
+  const thirdAdminProjectId = buildMappingTableId(thirdAdminToRevoke, projectId)
 
-  const firstUserProject = new AdminProject(firstUserProjectId)
-  firstUserProject.user = firstAdminToRevoke
-  firstUserProject.project = projectId
-  firstUserProject.save()
+  const firstAdminProject = new AdminProject(firstAdminProjectId)
+  firstAdminProject.user = firstAdminToRevoke
+  firstAdminProject.project = projectId
+  firstAdminProject.save()
 
-  const secondUserProject = new AdminProject(thirdUserProjectId)
-  secondUserProject.user = thirdAdminToRevoke
-  secondUserProject.project = projectId
-  secondUserProject.save()
+  const secondAdminProject = new AdminProject(thirdAdminProjectId)
+  secondAdminProject.user = thirdAdminToRevoke
+  secondAdminProject.project = projectId
+  secondAdminProject.save()
 
-  assert.fieldEquals('UserProject', firstUserProjectId, 'user', firstAdminToRevoke)
-  assert.fieldEquals('UserProject', firstUserProjectId, 'project', projectId)
-  assert.fieldEquals('UserProject', thirdUserProjectId, 'user', thirdAdminToRevoke)
-  assert.fieldEquals('UserProject', thirdUserProjectId, 'project', projectId)
+  assert.fieldEquals('AdminProject', firstAdminProjectId, 'user', firstAdminToRevoke)
+  assert.fieldEquals('AdminProject', firstAdminProjectId, 'project', projectId)
+  assert.fieldEquals('AdminProject', thirdAdminProjectId, 'user', thirdAdminToRevoke)
+  assert.fieldEquals('AdminProject', thirdAdminProjectId, 'project', projectId)
 
   const revokeAdminToProjectEvent = createStateChangeEventWithBody(
     "03",
@@ -124,9 +141,9 @@ test('Revoke project admins success', () => {
 
   handleStateChangesEvents([revokeAdminToProjectEvent])
 
-  assert.notInStore('UserProject', firstUserProjectId)
-  assert.notInStore('UserProject', secondUserProjectId)
-  assert.notInStore('UserProject', thirdUserProjectId)
+  assert.notInStore('AdminProject', firstAdminProjectId)
+  assert.notInStore('AdminProject', secondAdminProjectId)
+  assert.notInStore('AdminProject', thirdAdminProjectId)
 
   clearStore()
 })
