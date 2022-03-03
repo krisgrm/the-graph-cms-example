@@ -1,3 +1,8 @@
 /node_modules/
 /build/
 /generated/
+/cms-subgraph/node_modules/
+/cms-subgraph/generated/
+/cms-subgraph/build/
+/cms-contract/.idea/
+/cms-subgraph/tests/.bin/
