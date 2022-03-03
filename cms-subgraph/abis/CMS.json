@@ -21,9 +21,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes",
+        "internalType": "bytes[]",
         "name": "data_",
-        "type": "bytes"
+        "type": "bytes[]"
       }
     ],
     "name": "stateChange",
