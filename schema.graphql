@@ -13,11 +13,11 @@ type Platform @entity {
   "owner of the platform - user who created the platform"
   owner: User!
   "admins linked to this platform"
-  admins: [UserPlatform!]! @derivedFrom(field: "platform")
+  admins: [AdminPlatform!]! @derivedFrom(field: "platform")
   "projects linked to this platform"
-  projects: [Project!]! @derivedFrom(field: "platform")
+  projects: [PlatformProject!]! @derivedFrom(field: "platform")
   "content linked to this platform"
-  content: [Content!]! @derivedFrom(field: "platform")
+  content: [ContentPlatform!]! @derivedFrom(field: "platform")
   "platform space"
   space: Space!
 }
@@ -28,49 +28,68 @@ type Project @entity {
   "owner of the project - user who created the project"
   owner: User!
   "content linked to this project"
-  content: [Content!]! @derivedFrom(field: "project")
-  admins: [UserProject!]! @derivedFrom(field: "project")
-  platform: Platform
+  content: [ContentProject!]! @derivedFrom(field: "project")
+  "admins linked to this project"
+  admins: [AdminProject!]! @derivedFrom(field: "project")
+  "platforms linked to this project"
+  platforms: [PlatformProject!]! @derivedFrom(field: "project")
 }
 
 type Content @entity {
   "unique identifier and primary key of the entity"
   id: ID!
-  "owner of the content - user who created the content"
-  owner: User!
   "ipfs metadata hash"
   metadata: String!
-  "project linked to this content"
-  project: Project
-  platform: Platform
-  "admins linked to this content"
-  admins: [UserContent!]! @derivedFrom(field: "content")
+  "creator of the content - user who created the content"
+  creator: User!
+  "projects linked to this content"
+  projects: [ContentProject!]! @derivedFrom(field: "content")
+  "platforms linked to this content"
+  platforms: [ContentPlatform!]! @derivedFrom(field: "content")
 }
 
 type User @entity {
   "unique identifier and primary key of the entity"
   id: ID! # address
-  content: [UserContent!]! @derivedFrom(field: "user")
-  platform: [UserPlatform!]! @derivedFrom(field: "user")
+  "spaces this user is owner of"
+  spacesOwner: Space @derivedFrom(field: "owner")
+  "platforms this user is owner of"
+  platformsOwner: [Platform!]! @derivedFrom(field: "owner")
+  "projects this user is owner of"
+  projectsOwner: [Project!]! @derivedFrom(field: "owner")
+  "platforms this user is admin of"
+  platformsAdmin: [AdminPlatform!]! @derivedFrom(field: "user")
+  "projects this user is admin of"
+  projectsAdmin: [AdminProject!]! @derivedFrom(field: "user")
 }
 
-type UserContent @entity {
-  "unique identifier and primary key of the entity"
-  id: ID!
-  "content linked to this user"
-  content: Content!
-  "user linked to this content"
-  user: User!
-}
 
-type UserProject @entity {
+type AdminProject @entity {
   id: ID! # Set to `${user.id}-${project.id}`
   user: User!
   project: Project!
 }
 
-type UserPlatform @entity {
+type AdminPlatform @entity {
   id: ID!
   user: User!
+  platform: Platform!
+}
+
+type ContentProject @entity {
+  id: ID!
+  content: Content!
+  project: Project!
+}
+
+type ContentPlatform @entity {
+  id: ID!
+  content: Content!
+  platform: Platform!
+}
+
+type PlatformProject @entity {
+  id: ID!
+  project: Project!
   platform: Platform!
 }
